@@ -6,8 +6,10 @@ from django.db import models
 from datetime import datetime, timedelta
 
 import random, os
-import pytz
 from django.contrib import messages
+
+from utils.time_utils import to_chile_time_normalization, to_datetime
+
 
 
 
@@ -61,18 +63,17 @@ def article_request(request):
         if request.user.enabled:
             try:
 
-                string_inicio = request.POST['fecha_inicio'] + " " + request.POST['hora_inicio']
-                print("fecha inicio: %s" % string_inicio)
-                start_date_time = datetime.strptime(string_inicio, '%Y-%m-%d %H:%M')
-                string_fin = request.POST['fecha_fin'] + " " + request.POST['hora_fin']
-                end_date_time = datetime.strptime(string_fin, '%Y-%m-%d %H:%M')
 
+
+                string_inicio = request.POST['fecha_inicio'] + " " + request.POST['hora_inicio']
+                start_date_time = to_chile_time_normalization(to_datetime(string_inicio))
+                string_fin = request.POST['fecha_fin'] + " " + request.POST['hora_fin']
+                end_date_time = to_chile_time_normalization(to_datetime(string_fin))
+                now_time = to_chile_time_normalization(datetime.now())
                 if start_date_time > end_date_time:
                     messages.warning(request, 'La reserva debe terminar después de iniciar.')
-                elif start_date_time < datetime.now() + timedelta(hours=1):
+                elif start_date_time < now_time + timedelta(hours=1):
                     messages.warning(request, 'Los pedidos deben ser hechos al menos con una hora de anticipación.')
-                #elif start_date_time.date() != end_date_time.date():
-                #    messages.warning(request, 'Los pedidos deben ser devueltos el mismo día que se entregan.')
                 elif not verificar_horario_habil(start_date_time) and not verificar_horario_habil(end_date_time):
                     messages.warning(request, 'Los pedidos deben ser hechos en horario hábil.')
                 else:

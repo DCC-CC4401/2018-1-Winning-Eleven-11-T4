@@ -24,7 +24,9 @@ def modify_reservations(request):
     if request.method == "POST":
 
         accept = True if (request.POST["accept"] == "1") else False
-        reservations = Reservation.objects.filter(id__in=request.POST["selected"])
+        #reservations = Reservation.objects.filter(id__in=request.POST["selected"])
+        reservations = Reservation.objects.filter(id__in=request.POST.getlist("selected"))
+
         if accept:
             for reservation in reservations:
                 reservation.state = 'A'
