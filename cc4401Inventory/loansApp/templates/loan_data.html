@@ -1,0 +1,12 @@
+{% extends 'application_layout.html' %}
+
+{% load static %}
+
+{% block title %}
+  Ficha de préstamo: {{ loan.id }}
+{% endblock %}
+
+{% block body %}
+    Usuario : {{ user.email }}<br>
+    Articulo : {{ article.name }}
+{% endblock %}
