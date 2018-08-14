@@ -7,6 +7,41 @@
 {% endblock %}
 
 {% block body %}
-    Usuario : {{ user.email }}<br>
-    Articulo : {{ article.name }}
+    <div class="container">
+        <div class="row">
+            <div class="col-10">
+                <h1>Información del préstamo</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-10">
+                <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <th>ID:</th>
+                        <td>{{ loan.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Estado:</th>
+                        <td>{{ loan.state }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nombre del artículo:</th>
+                        <td>{{ article.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Descripción del artículo:</th>
+                        <td>{{ article.description }}</td>
+                    </tr>
+                    <tr>
+                        <th>Desde:</th>
+                        <td>{{ loan.starting_date_time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Hasta:</th>
+                        <td>{{ loan.ending_date_time }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}
