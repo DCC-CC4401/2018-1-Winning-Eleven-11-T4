@@ -22,15 +22,19 @@
                     </tr>
                     <tr>
                         <th>Estado:</th>
-                        <td>{{ loan.state }}</td>
+                        <td>
+                            {% if loan.state == 'A' %}
+                                Aceptado
+                            {% elif loan.state == 'R' %}
+                                Rechazado
+                            {% elif loan.state == 'P' %}
+                                Pendiente
+                            {% endif %}
+                        </td>
                     </tr>
                     <tr>
                         <th>Nombre del artículo:</th>
                         <td>{{ article.name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Descripción del artículo:</th>
-                        <td>{{ article.description }}</td>
                     </tr>
                     <tr>
                         <th>Desde:</th>
@@ -39,6 +43,48 @@
                     <tr>
                         <th>Hasta:</th>
                         <td>{{ loan.ending_date_time }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-10">
+                <h1>Resumen del artículo:</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-5">
+            {% if article.image %}
+                <img src= " {% static article.image.url %}" class="img-fluid" alt="Foto" style="height: 300px" />
+            {% else %}
+                <img class="card-img-top" src="{% static 'img/items/default_article.jpg' %}" alt="Card image cap">
+            {% endif %}
+            </div>
+            <div class="col-5">
+                 <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <th>Nombre:</th>
+                        <td>{{ article.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Descripción:</th>
+                        <td>{{ article.description }}</td>
+                    </tr>
+                     <tr>
+                        <th>Estado:</th>
+                        <td>
+                            {% if article.state == 'D' %}
+                                Disponible
+                            {% elif loan.state == 'P' %}
+                                En préstamo
+                            {% elif loan.state == 'R' %}
+                                En reparación
+                            {% elif loan.state == 'L' %}
+                                Perdido
+                            {% endif %}
+                        </td>
                     </tr>
                 </table>
             </div>
