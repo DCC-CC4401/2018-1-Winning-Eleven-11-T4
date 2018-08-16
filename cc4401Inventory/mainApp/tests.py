@@ -31,11 +31,14 @@ class TestLandingPageUser(TestCase):
         end_datetime2 = datetime.datetime.combine(last_tuesday, end_time)
         self.reservation2 = Reservation(space=self.space2, user=self.user, state='A',
                                         starting_date_time=start_datetime2, ending_date_time=end_datetime2)
+        print(start_datetime1)
+        print(start_datetime2)
 
     def test_calendar(self):
         self.client.login(email='test@email.com', password='12345')
         url = reverse('landing_spaces')
         response = self.client.get(url)
+        print(response.context['reservations'])
 
     def test_search_articles_name(self):
         self.client.login(email='test@email.com', password='12345')

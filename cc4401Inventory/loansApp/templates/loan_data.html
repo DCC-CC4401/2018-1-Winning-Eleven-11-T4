@@ -33,6 +33,10 @@
                         </td>
                     </tr>
                     <tr>
+                        <th>Usuario:</th>
+                        <td>{{ loan_user.email }}</td>
+                    </tr>
+                    <tr>
                         <th>Nombre del artículo:</th>
                         <td>{{ article.name }}</td>
                     </tr>
@@ -47,6 +51,7 @@
                 </table>
             </div>
         </div>
+
     </div>
     <div class="container">
         <div class="row">
@@ -77,16 +82,58 @@
                         <td>
                             {% if article.state == 'D' %}
                                 Disponible
-                            {% elif loan.state == 'P' %}
+                            {% elif article.state == 'P' %}
                                 En préstamo
-                            {% elif loan.state == 'R' %}
+                            {% elif article.state == 'R' %}
                                 En reparación
-                            {% elif loan.state == 'L' %}
+                            {% elif article.state == 'L' %}
                                 Perdido
                             {% endif %}
                         </td>
                     </tr>
                 </table>
+            {% if change_article %}
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmModal">
+                            {% if change_article == 'P' %}
+                                Marcar encontrado
+                            {% elif change_article == 'L' %}
+                                Marcar perdido
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+                <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLongTitle">Confirmar</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="{{ loan.id }}/change_article_state" method="post">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    {% if change_article == 'P' %}
+                                        ¿Esta seguro que desea marcar el artículo como encontrado?
+                                    {% elif change_article == 'L' %}
+                                        ¿Esta seguro que desea marcar el artículo como perdido?
+                                    {% endif %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                    <input type="hidden" value="{{ change_article }}" name="state" />
+                                    <input type="hidden" value="{{ user.email }}" name="user" />
+                                    <input type="hidden" value="{{ loan_user.email }}" name="loan_user" />
+                                    <button type="submit" class="btn btn-primary">Aceptar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
             </div>
         </div>
     </div>

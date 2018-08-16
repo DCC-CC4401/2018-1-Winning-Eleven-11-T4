@@ -10,7 +10,6 @@ import pytz
 from django.contrib import messages
 
 
-
 @login_required
 def article_data(request, article_id):
     try:
