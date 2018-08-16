@@ -35,7 +35,11 @@
             <th scope="col">ID</th>
             <th scope="col">Nombre del Articulo</th>
             <th scope="col">Estado</th>
-            <th scope="col"></th>
+            <th scope="col" class="center-column">
+                <a href="{% url 'add_item'%}" class="table-button add-button">
+                    <i class="fas fa-plus-circle"></i>
+                </a>
+            </th>
           </tr>
           </thead>
           <tbody>
