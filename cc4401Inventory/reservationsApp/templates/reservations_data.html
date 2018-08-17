@@ -1,0 +1,55 @@
+
+{% extends 'application_layout.html' %}
+
+{% load static %}
+
+{% block title %}
+  Ficha de reserva: {{ article.name }}, {{ l }}
+{% endblock %}
+
+
+{% block body %}
+
+  <div class="row">
+    <div class="col-md-4 offset-1">
+      <h3 class="block-title">Resumen reserva</h3>
+        <ul class="list-group">
+            <li class="list-group-item">Usuario: {{ user.first_name }} {{ user.last_name }}</li>
+            <li class="list-group-item">Fecha de inicio: {{ starting_day }}, {{ starting_hour }}</li>
+            <li class="list-group-item">Fecha de término: {{ ending_day }}, {{ ending_hour }}</li>
+        </ul>
+    </div>
+
+    <div class = "col-md-5 offset-2">
+
+        <div class="row">
+        <h1 class="article-name">
+          {{ article.name }}
+        {% if article.state == "D" %}
+            <span class="badge badge-pill badge-success"><i class="fas fa-chevron-left"></i> {{  article.get_state_display }}</span>
+          {% elif article.state == "P" %}
+            <span class="badge badge-pill badge-primary"><i class="fas fa-chevron-left"></i> {{  article.get_state_display }}</span>
+          {% elif article.state == "L" %}
+            <span class="badge badge-pill badge-danger"><i class="fas fa-chevron-left"></i> {{  article.get_state_display }}</span>
+          {% elif article.state == "R" %}
+            <span class="badge badge-pill badge-warning"><i class="fas fa-chevron-left"></i> {{  article.get_state_display }}</span>
+          {% endif %}
+         </h1>
+      </div>
+        {% if article.image %}
+            <img src= " {% static article.image.url %}" class="img-fluid" alt="Foto" style="height: 400px" />
+        {% else %}
+            <img class="card-img-top" src="{% static 'img/items/default_article.jpg' %}" alt="Card image cap">
+        {% endif %}
+
+      <div class="card">
+        <div class="card-header article-description-title">Descripción</div>
+        <div class="card-body">
+          <p class="card-text">{{ article.description }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
