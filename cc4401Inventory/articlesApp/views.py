@@ -5,10 +5,10 @@ from loansApp.models import Loan
 from django.db import models
 from datetime import datetime, timedelta
 
+
 import random, os
 import pytz
 from django.contrib import messages
-
 
 
 @login_required
@@ -44,6 +44,7 @@ def article_data(request, article_id):
         print(e)
         return redirect('/')
 
+
 def verificar_horario_habil(horario):
     if horario.isocalendar()[2] > 5:
         return False
@@ -56,7 +57,7 @@ def verificar_horario_habil(horario):
 @login_required
 def article_request(request):
     if request.method == 'POST':
-        article = Article.objects.get(id = request.POST['article_id'])
+        article = Article.objects.get(id= request.POST['article_id'])
 
         if request.user.enabled:
             try:
