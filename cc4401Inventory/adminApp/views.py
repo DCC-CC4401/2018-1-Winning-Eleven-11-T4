@@ -4,10 +4,15 @@ from reservationsApp.models import Reservation
 from loansApp.models import Loan
 from articlesApp.models import Article
 from spacesApp.models import Space
-from mainApp.models import User
+from mainApp.models import User, Item
 from datetime import datetime, timedelta, date
 import pytz
 from django.utils.timezone import localtime
+from django.contrib import messages
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
+from django.conf import settings
 
 @login_required
 def user_panel(request):
@@ -115,3 +120,31 @@ def actions_panel(request):
         'request': request
     }
     return render(request, 'actions_panel.html', context)
+
+
+@login_required
+def add_item(request):
+    if not request.user.is_staff:
+        return redirect('/')
+    else:
+        try:
+            return render(request, 'add_item.html')#, context)
+        except:
+            return redirect('/')
+
+
+def add_new_item(request):
+
+    context = {'error_message': '', }
+
+
+    if request.method == 'POST':
+        name = request.POST['name']
+        description = request.POST['description']
+        image = request.FILES['image']
+        tmp_file = os.path.join('mainApp/static/mainApp/img/items', image.name)
+        path = default_storage.save(tmp_file, ContentFile(image.read()))
+        new_item = Article(name=name, description=description, image = path, state='D')
+        new_item.save()
+        messages.success(request, 'Articulo agregado correctamente.')
+    return redirect('/admin/items-panel/')
