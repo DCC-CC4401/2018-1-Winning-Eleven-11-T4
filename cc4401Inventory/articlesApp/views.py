@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 
 
 import random, os
-import pytz
 from django.contrib import messages
 
 
@@ -17,7 +16,7 @@ def article_data(request, article_id):
         article = Article.objects.get(id=article_id)
 
         last_loans = Loan.objects.filter(article=article,
-                                         ending_date_time__lt=datetime.now(tz=pytz.utc)
+                                         ending_date_time__lt=datetime.now()
                                          ).order_by('-ending_date_time')[:10]
 
         loan_list = list()
@@ -135,10 +134,3 @@ def article_edit_description(request, article_id):
         a.save()
 
     return redirect('/article/' + str(article_id) + '/edit')
-
-@login_required
-def delete_item(request,article_id):
-
-    item = Article.objects.get(id=article_id)
-    item.delete()
-    return redirect('/admin/items-panel/')
