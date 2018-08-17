@@ -13,6 +13,10 @@ from django.contrib import messages
 
 @login_required
 def article_data(request, article_id):
+    if request.user.is_staff:
+        return redirect("/article/"+str(article_id)+"/edit")
+
+
     try:
         article = Article.objects.get(id=article_id)
 

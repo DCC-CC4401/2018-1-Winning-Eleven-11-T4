@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.timezone import localtime
 import datetime
 from articlesApp.models import Article
@@ -8,12 +8,18 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def landing_articles(request):
+    if request.user.is_staff:
+        return redirect('/admin/')
+
     context = {}
     return render(request, 'articulos.html', context)
 
 
 @login_required
 def landing_spaces(request, date=None):
+
+    if request.user.is_staff:
+        return redirect('/admin/')
 
     if date:
         current_date = date
@@ -53,6 +59,7 @@ def landing_spaces(request, date=None):
                'current_date' : current_date,
                'controls' : move_controls,
                'actual_monday' : monday}
+
     return render(request, 'espacios.html', context)
 
 
@@ -67,11 +74,15 @@ def landing_search(request, products):
                                 'P': '#3333cc',
                                 'L': '#cc0000'}
                    }
+
         return render(request, 'articulos.html', context)
 
 
 @login_required
 def search(request):
+    if request.user.is_staff:
+        return redirect('/admin/')
+
     if request.method == "GET":
         query = request.GET['query']
         #a_type = "comportamiento_no_definido"
@@ -83,4 +94,5 @@ def search(request):
             articles = Article.objects.filter(name__icontains=query.lower())
 
         products = None if (request.GET['query'] == "") else articles
+
         return landing_search(request, products)
