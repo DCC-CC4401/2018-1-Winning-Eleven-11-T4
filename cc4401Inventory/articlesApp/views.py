@@ -17,7 +17,7 @@ def article_data(request, article_id):
         article = Article.objects.get(id=article_id)
 
         last_loans = Loan.objects.filter(article=article,
-                                         ending_date_time__lt=datetime.now(tz=pytz.utc)
+                                         ending_date_time__lt=datetime.now()
                                          ).order_by('-ending_date_time')[:10]
 
         loan_list = list()
