@@ -35,6 +35,7 @@ def user_cancel_reservation(request, reservation_id):
             redirect_string = '/space/%d' % space_id
         return redirect(redirect_string , user_id=request.user.id)
 
+
 def modify_reservations(request):
     user = request.user
     if not (user.is_superuser and user.is_staff):
@@ -42,7 +43,6 @@ def modify_reservations(request):
     if request.method == "POST":
 
         accept = True if (request.POST["accept"] == "1") else False
-        #reservations = Reservation.objects.filter(id__in=request.POST["selected"])
         reservations = Reservation.objects.filter(id__in=request.POST.getlist("selected"))
 
         if accept:
