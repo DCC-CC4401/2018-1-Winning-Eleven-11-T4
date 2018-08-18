@@ -37,7 +37,7 @@
             <td>{{ reservation.id }}</td>
             <td>{{ reservation.space.name }}</td>
             <td>{{ reservation.user.get_full_name }}</td>
-            <td>{{ reservation.starting_date_time }}</td>
+            <td>{{ reservation.starting_date_time|date:'d/m/Y H:i' }}</td>
             <td><input type="checkbox" name="selected" value="{{ reservation.id }}"></td>
           </tr>
           {% endfor %}
@@ -111,7 +111,7 @@
                           <td>{{ loan.id }}</td>
                           <td>{{ loan.article.name }}</td>
                           <td>{{ loan.user.get_full_name }}</td>
-                          <td>{{ loan.starting_date_time }}</td>
+                          <td>{{ loan.starting_date_time|date:'d/m/Y H:i' }}</td>
                           <td>{{ loan.get_state_display }}</td>
                           {% if loan_filter != 'entregados' and loan_filter != 'activos' %}
                               <td><input type="checkbox" name="loan_selected" value="{{ loan.id }}"></td>
