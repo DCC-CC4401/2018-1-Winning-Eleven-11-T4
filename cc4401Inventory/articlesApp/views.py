@@ -46,16 +46,9 @@ def article_data(request, article_id):
         print(e)
         return redirect('/')
 
+
 def verificar_horario_habil(horario):
     return not is_non_workday(horario) and not (horario.hour < 9 or horario.hour > 18)
-    """
-    if horario.isocalendar()[2] > 5:
-        return False
-    if horario.hour < 9 or horario.hour > 18:
-        return False
-
-    return True
-    """
 
 
 @login_required

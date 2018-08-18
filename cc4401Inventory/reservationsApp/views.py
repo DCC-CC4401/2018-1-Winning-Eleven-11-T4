@@ -17,6 +17,24 @@ def delete(request):
         return redirect('user_data', user_id=request.user.id)
 
 
+def user_cancel_reservation(request, reservation_id):
+    space_id = None
+    if request.method == 'POST':
+        try:
+            reservation = Reservation.objects.get(id=reservation_id)
+            space_id = reservation.space_id
+            if reservation.user.id != request.user.id and not (request.user.is_staff or request.user.is_superuser):
+                messages.warning(request, 'Usuario no autorizado para cancelar reserva')
+            elif reservation.state == 'P':
+                reservation.delete()
+        except:
+            messages.warning(request, 'Ha ocurrido un error y la reserva no se ha eliminado')
+
+        redirect_string = '/'
+        if space_id is not None:
+            redirect_string = '/space/%d' % space_id
+        return redirect(redirect_string , user_id=request.user.id)
+
 def modify_reservations(request):
     user = request.user
     if not (user.is_superuser and user.is_staff):
@@ -45,10 +63,13 @@ def reservations_data(request, reservation_id):
         space = reservation.space
         user = reservation.user
         login_email = request.user.email
+        user_owns_reservation = user.id == request.user.id or request.user.is_superuser or request.user.is_staff
         context = {'reservation': reservation,
                    'space': space,
                    'user': user,
-                   'login_email': login_email}
+                   'login_email': login_email,
+                   'user_owns_reservation': user_owns_reservation
+                   }
 
         if login_email == user.email and reservation.state == 'A':
             if space.state == 'D':

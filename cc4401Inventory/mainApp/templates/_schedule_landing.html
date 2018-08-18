@@ -36,7 +36,8 @@
               title: '{{ res.title }}',
               start: '{{ res.start }}',
               end: '{{ res.end }}',
-              color: '{{ res.color }}'
+              color: '{{ res.color }}',
+              url: '/reservation/{{ res.id }}'
             },
           {% endfor %}
       ],
@@ -107,7 +108,7 @@
         <form method="POST">
         {% for s in spacesList %}
             {% csrf_token %}
-            <input style="margin-left: 20px" class="boxEspacios" type="checkbox" name="optcheck[]" value="{{ s.id }}" {% if s.id in spacesFilter %}checked="checked"{% endif %}> {{ s.nombre }}  <i class="fas fa-circle" style="color: {{ s.colorA }}"></i>
+            <input style="margin-left: 20px" class="boxEspacios" type="checkbox" name="optcheck[]" value="{{ s.id }}" {% if s.id in spacesFilter %}checked="checked"{% endif %}> <a href="/space/{{ s.id }}">{{ s.nombre }}</a> <i class="fas fa-circle" style="color: {{ s.colorA }}"></i>
         {% endfor %}
         </form>
     </div></body>
@@ -130,7 +131,7 @@
                    <select name="spaceid" id="spaceid">
                        {% for s in spacesList %}
                            {% if s.id in spacesFilter %}
-                            <option value={{s.id}}> {{ s.nombre }}</option>
+                               <option value={{s.id}}> {{ s.nombre }}</option>
                            {% endif %}
                        {% endfor %}
                    </select>

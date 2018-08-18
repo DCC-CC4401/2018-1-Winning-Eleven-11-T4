@@ -90,7 +90,8 @@ def landing_spaces(request):
                         "start": r.starting_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
                         "end": r.ending_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
                         "color": color,
-                        "estado": r.state
+                        "estado": r.state,
+                        "id": r.id
                     }
                     reservations_list.append(reserva_dic)
 

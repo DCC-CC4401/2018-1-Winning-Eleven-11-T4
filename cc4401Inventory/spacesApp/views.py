@@ -5,6 +5,7 @@ import datetime
 from django.contrib import messages
 from datetime import timedelta
 
+
 def space_data(request, space_id):
     try:
         space = Space.objects.get(id=space_id)
@@ -56,13 +57,36 @@ def space_data(request, space_id):
                 else:
                     messages.warning(request, 'Usuario no habilitado para pedir préstamos')
 
+        last_reservations = Reservation.objects.filter(space=space_id).order_by('-ending_date_time')[:10]
+
+        reservations_last_ten = list()
+        for reservation in last_reservations:
+            starting_day = reservation.starting_date_time.strftime("%d-%m-%Y")
+            ending_day = reservation.ending_date_time.strftime("%d-%m-%Y")
+            starting_hour = reservation.starting_date_time.strftime("%H:%M")
+            ending_hour = reservation.ending_date_time.strftime("%H:%M")
+
+            content = ''
+
+            if starting_day == ending_day:
+                content = starting_day + " " + starting_hour + " a " + ending_hour
+            else:
+                content = starting_day + ", " + starting_hour + " a " + ending_day + ", " + ending_hour
+
+            url = '/reservation/%d' % reservation.id
+            reservation_info = {
+                'content': content,
+                'url': url
+            }
+
+            reservations_last_ten.append(reservation_info)
 
         context = {
             'space': space,
             'reservations': reservations_list,
+            'reservations_last_ten': reservations_last_ten,
             'request': request
         }
-
 
         return render(request, 'space_data.html', context)
     except Exception as e:

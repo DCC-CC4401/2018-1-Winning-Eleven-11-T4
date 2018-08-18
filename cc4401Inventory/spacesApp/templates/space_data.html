@@ -40,6 +40,19 @@
       </div>
    </div>
 
+  <div class = "col-md-5 offset-2">
+        <div class = "row reservation-history-container">
+          <h3 class="block-title"> Historial de reservas</h3>
+            <div class="reservation-history">
+                <ul>
+                    {% for reserv in reservations_last_ten %}
+                        <li><a href="{{ reserv.url }}">{{reserv.content}}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
   </div>
     <br>
         <div class="container">
