@@ -144,3 +144,4 @@ STATICFILES_DIRS = [
     '',
 ]
 
+# APPEND_SLASH = True

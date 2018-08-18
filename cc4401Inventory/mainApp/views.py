@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
 from django.utils.timezone import localtime
 import datetime
+from datetime import timedelta
 from articlesApp.models import Article
 from reservationsApp.models import Reservation
+from spacesApp.models import Space
 from django.contrib.auth.decorators import login_required
-
-
+from django.contrib import messages
 @login_required
 def landing_articles(request):
     if request.user.is_staff:
@@ -16,8 +17,68 @@ def landing_articles(request):
 
 
 @login_required
-def landing_spaces(request, date=None):
+def landing_spaces(request):
 
+
+    reservations = Reservation.objects.exclude(state='R').order_by('starting_date_time')
+    spaces = Space.objects.all()
+    coloresP = ['rgba(102,153,102,0.7)', 'rgba(153,102,102,0.7)', 'rgba(102,102,153,0.7)', 'rgba(153,127,102,0.5)',
+                'rgba(153,102,153,0.7)', 'rgba(102,153,153,0.7)']
+    coloresA = ['rgba(63,191,63,0.9)', 'rgba(191,63,63,0.9)', 'rgba(63,63,191,0.9)', 'rgba(191,127,63,0.9)',
+               'rgba(191,63,191,0.9)', 'rgba(63,191,191,0.9)']
+
+    spaces_list=[]
+    reservations_list=[]
+    space_filter = []
+    i = 0
+    for s in spaces:
+        espacio_dic = {
+            "id": s.id,
+            "nombre": s.name,
+            "estado": s.state,
+            "colorP": coloresP[i],
+            "colorA": coloresA[i]
+        }
+        i = i + 1
+        spaces_list.append(espacio_dic)
+
+    if request.method == 'POST':
+        for sid in request.POST.getlist('optcheck[]'):
+            space_filter.append(int(sid))
+
+        if "ReservaForm" in request.POST:
+            for s in spaces:
+                space_filter.append(int(s.id))
+            if request.user.enabled:
+                space = Space.objects.get(id=request.POST["spaceid"])
+                try:
+                    string_startDate = request.POST["startDate"]
+                    string_endDate = request.POST["endDate"]
+                    start_date_time = datetime.datetime.strptime(string_startDate, '%Y-%m-%d %H:%M')
+                    end_date_time = datetime.datetime.strptime(string_endDate, '%Y-%m-%d %H:%M')
+                    if start_date_time > end_date_time:
+                        messages.warning(request, 'La reserva debe terminar después de iniciar.')
+                    elif start_date_time < datetime.datetime.now() + timedelta(hours=1):
+                        messages.warning(request, 'Los pedidos deben ser hechos al menos con una hora de anticipación.')
+                    elif start_date_time.date() != end_date_time.date():
+                        messages.warning(request, 'Los pedidos deben ser devueltos el mismo día que se entregan.')
+                    elif not verificar_horario_habil(start_date_time) and not verificar_horario_habil(end_date_time):
+                        messages.warning(request, 'Los pedidos deben ser hechos en horario hábil.')
+                    else:
+                        newReserv = Reservation()
+                        newReserv.space = space
+                        newReserv.starting_date_time = start_date_time
+                        newReserv.ending_date_time = end_date_time
+                        newReserv.user = request.user
+                        newReserv.save()
+                        messages.success(request, 'Reserva realizada con éxito')
+                except Exception as e:
+                    messages.warning(request, 'Ingrese una fecha y hora válida. ')
+            else:
+                messages.warning(request, 'Usuario no habilitado para pedir préstamos')
+    else:
+        for s in spaces:
+            space_filter.append(int(s.id))
     if request.user.is_staff:
         return redirect('/admin/')
 
@@ -32,34 +93,30 @@ def landing_spaces(request, date=None):
             current_week = datetime.date.today().isocalendar()[1]
             current_date = datetime.date.today().strftime("%Y-%m-%d")
 
-    reservations = Reservation.objects.filter(starting_date_time__week = current_week, state__in = ['P','A'])
-    colores = {'A': 'rgba(0,153,0,0.7)',
-               'P': 'rgba(51,51,204,0.7)'}
-
-    res_list = []
-    for i in range(5):
-        res_list.append(list())
     for r in reservations:
-        reserv = []
-        reserv.append(r.space.name)
-        reserv.append(localtime(r.starting_date_time).strftime("%H:%M"))
-        reserv.append(localtime(r.ending_date_time).strftime("%H:%M"))
-        reserv.append(colores[r.state])
-        res_list[r.starting_date_time.isocalendar()[2]-1].append(reserv)
+        if r.space.id in space_filter:
+            for s in spaces_list:
+                if r.space.id == s["id"]:
+                    title = str(r.space.name) + " - " + str(r.user.get_full_name())
+                    color = s["colorA"]
+                    if r.state == 'P':
+                        title = title + " (pendiente)"
+                        color = s["colorP"]
+                    reserva_dic = {
+                        "title": title,
+                        "start": r.starting_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "end": r.ending_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "color": color,
+                        "estado": r.state,
+                        "id": r.id
+                    }
+                    reservations_list.append(reserva_dic)
 
-    move_controls = list()
-    move_controls.append((datetime.datetime.strptime(current_date,"%Y-%m-%d")+datetime.timedelta(weeks=-4)).strftime("%Y-%m-%d"))
-    move_controls.append((datetime.datetime.strptime(current_date,"%Y-%m-%d")+datetime.timedelta(weeks=-1)).strftime("%Y-%m-%d"))
-    move_controls.append((datetime.datetime.strptime(current_date,"%Y-%m-%d")+datetime.timedelta(weeks=1)).strftime("%Y-%m-%d"))
-    move_controls.append((datetime.datetime.strptime(current_date,"%Y-%m-%d")+datetime.timedelta(weeks=4)).strftime("%Y-%m-%d"))
-
-    delta = (datetime.datetime.strptime(current_date, "%Y-%m-%d").isocalendar()[2])-1
-    monday = ((datetime.datetime.strptime(current_date, "%Y-%m-%d") - datetime.timedelta(days=delta)).strftime("%d/%m/%Y"))
-    context = {'reservations' : res_list,
-               'current_date' : current_date,
-               'controls' : move_controls,
-               'actual_monday' : monday}
-
+    context = {'reservations': reservations_list,
+               'spacesList': spaces_list,
+               'spacesFilter': space_filter,
+               'request': request
+    }
     return render(request, 'espacios.html', context)
 
 
@@ -74,7 +131,6 @@ def landing_search(request, products):
                                 'P': '#3333cc',
                                 'L': '#cc0000'}
                    }
-
         return render(request, 'articulos.html', context)
 
 
@@ -94,5 +150,12 @@ def search(request):
             articles = Article.objects.filter(name__icontains=query.lower())
 
         products = None if (request.GET['query'] == "") else articles
-
         return landing_search(request, products)
+
+def verificar_horario_habil(horario):
+    if horario.isocalendar()[2] > 5:
+        return False
+    if horario.hour < 9 or horario.hour > 18:
+        return False
+
+    return True

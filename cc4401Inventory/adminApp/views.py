@@ -4,15 +4,9 @@ from reservationsApp.models import Reservation
 from loansApp.models import Loan
 from articlesApp.models import Article
 from spacesApp.models import Space
-from mainApp.models import User, Item
+from mainApp.models import User
 from datetime import datetime, timedelta, date
-import pytz
 from django.utils.timezone import localtime
-from django.contrib import messages
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-import os
-from django.conf import settings
 
 @login_required
 def user_panel(request):
@@ -41,22 +35,61 @@ def items_panel(request):
 @login_required
 def actions_panel(request):
     user = request.user
+
     if not (user.is_superuser and user.is_staff):
         return redirect('/')
     try:
-        current_week = datetime.strptime(request.GET["date"], "%Y-%m-%d").date().isocalendar()[1]
         current_date = request.GET["date"]
     except:
         current_date = date.today().strftime("%Y-%m-%d")
-        current_week = date.today().isocalendar()[1]
+    reservations = Reservation.objects.exclude(state='R').order_by('starting_date_time')
+    spaces = Space.objects.all()
+    coloresP = ['rgba(102,153,102,0.7)', 'rgba(153,102,102,0.7)', 'rgba(102,102,153,0.7)', 'rgba(153,127,102,0.5)',
+                'rgba(153,102,153,0.7)', 'rgba(102,153,153,0.7)']
+    coloresA = ['rgba(63,191,63,0.9)', 'rgba(191,63,63,0.9)', 'rgba(63,63,191,0.9)', 'rgba(191,127,63,0.9)',
+               'rgba(191,63,191,0.9)', 'rgba(63,191,191,0.9)']
+    spaces_list=[]
+    reservations_list=[]
+    space_filter = []
+    i = 0
+    for s in spaces:
+        espacio_dic = {
+            "id": s.id,
+            "nombre": s.name,
+            "estado": s.state,
+            "colorP": coloresP[i],
+            "colorA": coloresA[i]
+        }
+        i = i + 1
+        spaces_list.append(espacio_dic)
 
-    colores = {'A': 'rgba(0,153,0,0.7)',
-               'P': 'rgba(51,51,204,0.7)',
-                'R': 'rgba(153, 0, 0,0.7)'}
+    if request.method == 'POST':
+        for sid in request.POST.getlist('optcheck[]'):
+            space_filter.append(int(sid))
+    else:
+        for s in spaces:
+            space_filter.append(int(s.id))
 
-    reservations = Reservation.objects.filter(state='P').order_by('starting_date_time')
-    current_week_reservations = Reservation.objects.filter(starting_date_time__week = current_week)
-    actual_date = datetime.now(tz=pytz.utc)
+    for r in reservations:
+        if r.space.id in space_filter:
+            for s in spaces_list:
+                if r.space.id == s["id"]:
+                    title = str(r.space.name) + " - " + str(r.user.get_full_name())
+                    color = s["colorA"]
+                    if r.state == 'P':
+                        title = title + " (pendiente)"
+                        color = s["colorP"]
+                    reserva_dic = {
+                        "title": title,
+                        "start": r.starting_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "end": r.ending_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
+                        "color": color,
+                        "estado": r.state
+                    }
+                    reservations_list.append(reserva_dic)
+
+    actual_date = datetime.now()
+    loans = Loan.objects.all().order_by('starting_date_time')
     try:
         if request.method == "GET":
             if request.GET["filter"]=='vigentes':
@@ -70,66 +103,14 @@ def actions_panel(request):
     except:
         loans = Loan.objects.all().order_by('starting_date_time')
 
-    res_list = []
-    for i in range(5):
-        res_list.append(list())
-    for r in current_week_reservations:
-        reserv = list()
-        reserv.append(r.space.name)
-        reserv.append(localtime(r.starting_date_time).strftime("%H:%M"))
-        reserv.append(localtime(r.ending_date_time).strftime("%H:%M"))
-        reserv.append(colores[r.state])
-        res_list[r.starting_date_time.isocalendar()[2] - 1].append(reserv)
-
-    move_controls = list()
-    move_controls.append(
-        (datetime.strptime(current_date, "%Y-%m-%d") + timedelta(weeks=-4)).strftime("%Y-%m-%d"))
-    move_controls.append(
-        (datetime.strptime(current_date, "%Y-%m-%d") + timedelta(weeks=-1)).strftime("%Y-%m-%d"))
-    move_controls.append(
-        (datetime.strptime(current_date, "%Y-%m-%d") + timedelta(weeks=1)).strftime("%Y-%m-%d"))
-    move_controls.append(
-        (datetime.strptime(current_date, "%Y-%m-%d") + timedelta(weeks=4)).strftime("%Y-%m-%d"))
-
-    delta = (datetime.strptime(current_date, "%Y-%m-%d").isocalendar()[2]) - 1
-    monday = (
-        (datetime.strptime(current_date, "%Y-%m-%d") - timedelta(days=delta)).strftime("%d/%m/%Y"))
-
 
     context = {
         'reservations_query': reservations,
         'loans': loans,
-        'reservations': res_list,
         'current_date': current_date,
-        'controls': move_controls,
-        'actual_monday': monday
+        'reservations': reservations_list,
+        'spacesList': spaces_list,
+        'spacesFilter': space_filter,
+        'request': request
     }
     return render(request, 'actions_panel.html', context)
-
-
-@login_required
-def add_item(request):
-    if not request.user.is_staff:
-        return redirect('/')
-    else:
-        try:
-            return render(request, 'add_item.html')#, context)
-        except:
-            return redirect('/')
-
-
-def add_new_item(request):
-
-    context = {'error_message': '', }
-
-
-    if request.method == 'POST':
-        name = request.POST['name']
-        description = request.POST['description']
-        image = request.FILES['image']
-        tmp_file = os.path.join('mainApp/static/mainApp/img/items', image.name)
-        path = default_storage.save(tmp_file, ContentFile(image.read()))
-        new_item = Article(name=name, description=description, image = path, state='D')
-        new_item.save()
-        messages.success(request, 'Articulo agregado correctamente.')
-    return redirect('/admin/items-panel/')
