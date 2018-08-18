@@ -1,8 +1,7 @@
-from django.urls import path, include
+from django.urls import path
 
 from . import views
 
 urlpatterns = [
-	#path('<int:space_id>', include('reservationsApp.urls')),
-	path('<int:space_id>/reservation/', include('reservationsApp.urls')),
+    path('<int:space_id>/', views.space_data, name='space_data'),
 ]

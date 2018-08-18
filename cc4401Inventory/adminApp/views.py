@@ -4,15 +4,9 @@ from reservationsApp.models import Reservation
 from loansApp.models import Loan
 from articlesApp.models import Article
 from spacesApp.models import Space
-from mainApp.models import User, Item
+from mainApp.models import User
 from datetime import datetime, timedelta, date
-import pytz
 from django.utils.timezone import localtime
-from django.contrib import messages
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-import os
-from django.conf import settings
 
 @login_required
 def user_panel(request):
@@ -48,7 +42,7 @@ def actions_panel(request):
         current_date = request.GET["date"]
     except:
         current_date = date.today().strftime("%Y-%m-%d")
-    reservations = Reservation.objects.order_by('starting_date_time')
+    reservations = Reservation.objects.exclude(state='R').order_by('starting_date_time')
     spaces = Space.objects.all()
     coloresP = ['rgba(102,153,102,0.7)', 'rgba(153,102,102,0.7)', 'rgba(102,102,153,0.7)', 'rgba(153,127,102,0.5)',
                 'rgba(153,102,153,0.7)', 'rgba(102,153,153,0.7)']
@@ -94,7 +88,7 @@ def actions_panel(request):
                     }
                     reservations_list.append(reserva_dic)
 
-    actual_date = datetime.now(tz=pytz.utc)
+    actual_date = datetime.now()
     loans = Loan.objects.all().order_by('starting_date_time')
     try:
         if request.method == "GET":
@@ -120,31 +114,3 @@ def actions_panel(request):
         'request': request
     }
     return render(request, 'actions_panel.html', context)
-
-
-@login_required
-def add_item(request):
-    if not request.user.is_staff:
-        return redirect('/')
-    else:
-        try:
-            return render(request, 'add_item.html')#, context)
-        except:
-            return redirect('/')
-
-
-def add_new_item(request):
-
-    context = {'error_message': '', }
-
-
-    if request.method == 'POST':
-        name = request.POST['name']
-        description = request.POST['description']
-        image = request.FILES['image']
-        tmp_file = os.path.join('mainApp/static/mainApp/img/items', image.name)
-        path = default_storage.save(tmp_file, ContentFile(image.read()))
-        new_item = Article(name=name, description=description, image = path, state='D')
-        new_item.save()
-        messages.success(request, 'Articulo agregado correctamente.')
-    return redirect('/admin/items-panel/')

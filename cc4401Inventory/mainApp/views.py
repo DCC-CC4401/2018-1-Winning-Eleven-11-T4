@@ -16,7 +16,7 @@ def landing_articles(request):
 def landing_spaces(request):
 
 
-    reservations = Reservation.objects.order_by('starting_date_time')
+    reservations = Reservation.objects.exclude(state='R').order_by('starting_date_time')
     spaces = Space.objects.all()
     coloresP = ['rgba(102,153,102,0.7)', 'rgba(153,102,102,0.7)', 'rgba(102,102,153,0.7)', 'rgba(153,127,102,0.5)',
                 'rgba(153,102,153,0.7)', 'rgba(102,153,153,0.7)']

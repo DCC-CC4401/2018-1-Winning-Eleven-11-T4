@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 
 
 import random, os
-import pytz
 from django.contrib import messages
 
 
@@ -16,8 +15,8 @@ def article_data(request, article_id):
     try:
         article = Article.objects.get(id=article_id)
 
-        last_loans = Loan.objects.filter(article=article#,
-                                         #ending_date_time__lt=datetime.now(tz=pytz.utc)
+        last_loans = Loan.objects.filter(article=article,
+                                         ending_date_time__lt=datetime.now()
                                          ).order_by('-ending_date_time')[:10]
 
         loan_list = list()
@@ -61,9 +60,7 @@ def article_request(request):
 
         if request.user.enabled:
             try:
-
                 string_inicio = request.POST['fecha_inicio'] + " " + request.POST['hora_inicio']
-                print("fecha inicio: %s" % string_inicio)
                 start_date_time = datetime.strptime(string_inicio, '%Y-%m-%d %H:%M')
                 string_fin = request.POST['fecha_fin'] + " " + request.POST['hora_fin']
                 end_date_time = datetime.strptime(string_fin, '%Y-%m-%d %H:%M')
@@ -72,8 +69,8 @@ def article_request(request):
                     messages.warning(request, 'La reserva debe terminar después de iniciar.')
                 elif start_date_time < datetime.now() + timedelta(hours=1):
                     messages.warning(request, 'Los pedidos deben ser hechos al menos con una hora de anticipación.')
-                #elif start_date_time.date() != end_date_time.date():
-                #    messages.warning(request, 'Los pedidos deben ser devueltos el mismo día que se entregan.')
+                elif start_date_time.date() != end_date_time.date():
+                    messages.warning(request, 'Los pedidos deben ser devueltos el mismo día que se entregan.')
                 elif not verificar_horario_habil(start_date_time) and not verificar_horario_habil(end_date_time):
                     messages.warning(request, 'Los pedidos deben ser hechos en horario hábil.')
                 else:
@@ -137,10 +134,3 @@ def article_edit_description(request, article_id):
         a.save()
 
     return redirect('/article/' + str(article_id) + '/edit')
-
-@login_required
-def delete_item(request,article_id):
-
-    item = Article.objects.get(id=article_id)
-    item.delete()
-    return redirect('/admin/items-panel/')
