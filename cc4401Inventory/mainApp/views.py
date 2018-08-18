@@ -82,17 +82,6 @@ def landing_spaces(request):
     if request.user.is_staff:
         return redirect('/admin/')
 
-    if date:
-        current_date = date
-        current_week = datetime.datetime.strptime(current_date,"%Y-%m-%d").date().isocalendar()[1]
-    else:
-        try:
-            current_week = datetime.datetime.strptime(request.GET["date"], "%Y-%m-%d").date().isocalendar()[1]
-            current_date = request.GET["date"]
-        except:
-            current_week = datetime.date.today().isocalendar()[1]
-            current_date = datetime.date.today().strftime("%Y-%m-%d")
-
     for r in reservations:
         if r.space.id in space_filter:
             for s in spaces_list:
