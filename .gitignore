@@ -60,8 +60,5 @@ venv/
 db.sqlite3
 **/mainApp/static/mainApp/img/avatars/*
 **/mainApp/static/mainApp/img/items/*
-<<<<<<< HEAD
-**/migrations/
-=======
 **/migrations
->>>>>>> Fichas+Calendario
+
