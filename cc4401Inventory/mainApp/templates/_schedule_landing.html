@@ -1,165 +1,195 @@
 {% load static %}
-<head>
-    <link rel="stylesheet" href="{% static 'mainApp/css/schedule_reset.css' %}"> <!-- CSS reset -->
-</head>
-<div class="cd-schedule loading">
-	<div class="timeline" id="timeline">
-		<ul>
-			<li><span>09:00</span></li>
-			<li><span>09:30</span></li>
-			<li><span>10:00</span></li>
-			<li><span>10:30</span></li>
-			<li><span>11:00</span></li>
-			<li><span>11:30</span></li>
-			<li><span>12:00</span></li>
-			<li><span>12:30</span></li>
-			<li><span>13:00</span></li>
-			<li><span>13:30</span></li>
-			<li><span>14:00</span></li>
-			<li><span>14:30</span></li>
-			<li><span>15:00</span></li>
-			<li><span>15:30</span></li>
-			<li><span>16:00</span></li>
-			<li><span>16:30</span></li>
-			<li><span>17:00</span></li>
-			<li><span>17:30</span></li>
-			<li><span>18:00</span></li>
-		</ul>
-	</div> <!-- .timeline -->
-	<div id="line-container" class="line-container">
-	<div id="line" class="clock"></div><div class="message" id="message"></div>
-		</div>
-	<div class="events" id="events">
-		<ul>
-			<li class="events-group">
-				<div class="top-info"><span>Lunes</span></div>
+<link href="{% static 'mainApp/scripts/fullcalendar.min.css'%}" rel='stylesheet' />
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <script type="text/javascript" src="{% static 'mainApp/scripts/lib/moment.min.js'%}"></script>
+    <script type="text/javascript" src="{% static 'mainApp/scripts/customCalendar.js'%}"></script>
+    <script type="text/javascript" src="{% static 'mainApp/scripts/locale-all.js'%}"></script>
+    <script>
+  $(document).ready(function() {
+    var LocalCode = 'es-do';
+    $('#calendar').fullCalendar({
+      header: {
+        left: 'prevMonth, prev',
+        center: 'title today',
+          right: 'next, nextMonth'
+      },
+      locale: LocalCode,
+      defaultView: 'agendaWeek',
+      weekends: false,
+      timezone: 'America/Santiago',
+      minTime: '09:00:00',
+      maxTime: '18:00:00',
+      aspectRatio: 2.7,
+      allDaySlot: false,
+      editable: false,
+      {% if request.get_full_path != "/admin/actions-panel/" %}
+      selectable: true,
+      selectHelper: true,
+      select: function (start, end) {
+          document.getElementById("startDate").value = start.format('YYYY-MM-DD HH:mm');
+          document.getElementById("endDate").value = end.format('YYYY-MM-DD HH:mm');
+          $('#createEventModal').modal('show');
+      },
+      {% endif %}
+      events: [ {% for res in reservations %}
+               {
+              title: '{{ res.title }}',
+              start: '{{ res.start }}',
+              end: '{{ res.end }}',
+              color: '{{ res.color }}'
+            },
+          {% endfor %}
+      ],
+     eventClick: function (event) {
+            /*
+          document.getElementById("startDate").value = event.start;
+          document.getElementById("endDate").value = event.end;
+          var p_space = document.getElementById("spaceP");
+          var text = document.createTextNode(event.title)
+          p_space.appendChild(text);
+          alert('!');
+          $('#fullCalModal').modal('show');*/
+        },
+    });
+    $('input[class=boxEspacios]').on('click', function() {
+         $(this).closest("form").submit();
+    });
+     $('a').on('click', function(e) {
+         var id= $(this).attr('id');
+         var tabla = document.getElementById("mostrar_"+id.toString());
+         $(".filter").hide();
+         tabla.setAttribute("style", "display:inline")
+     });
+      /*
+      $('#reservation_form').submit(function(event){
+            // We don't want this to act as a link so cancel the link action
+            event.preventDefault();
+            $.ajax({
+               url : '/spaces/',
+               type : "POST",
+               data : {spaceid : $('#space').val(),  startDate : new Date($('#startDate').val()),
+                   endDate : new Date($('#endDate').val()) }
+            }).done(function(data){
+                alert('!');
+            });
+            doSubmit();
+          });
+      */
+      function doSubmit(){
+          var title = "{{ user.get_full_name }}";
+          var color = "blue";
+          var sid = $('#spaceid').val();
+          {% for s in spacesList %}
+            if (sid == {{s.id}}){
+                title = "{{ s.nombre }}" + " - " + title + " (pendiente)";
+                color = "{{ s.colorP }}";
+            }
+          {% endfor %}
+          var startDate = new Date($('#startDate').val());
+          var endDate = new Date($('#endDate').val());
+        $("#createEventModal").modal('hide');
+        $("#calendar").fullCalendar('renderEvent',
+            {
 
-				<ul>
-					{% for r in reservations.0 %}
+                title: title,
+                start: startDate,
+                end: endDate,
+                color: color
+            },
+            true);
+      }
+  });
 
-					<li class="single-event" data-start="{{r.1}}" data-end="{{r.2}}" bgcolor="{{r.3}}">
-						<a href="">
-							<em class="event-name">{{r.0}}</em>
-						</a>
-					</li>
+</script>
+<body>
+<div id="calendar"></div>
+    <div style="text-align: center; margin-bottom: 50px">
+        <form method="POST">
+        {% for s in spacesList %}
+            {% csrf_token %}
+            <input style="margin-left: 20px" class="boxEspacios" type="checkbox" name="optcheck[]" value="{{ s.id }}" {% if s.id in spacesFilter %}checked="checked"{% endif %}> {{ s.nombre }}  <i class="fas fa-circle" style="color: {{ s.colorA }}"></i>
+        {% endfor %}
+        </form>
+    </div></body>
 
-					{% endfor%}
+<div id="createEventModal" class="modal fade">
+<form method="POST" id="reservation_form">
+    {% csrf_token %}
+    <input type="hidden" id="ReservaForm" name="ReservaForm">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Nueva reserva</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span> <span class="sr-only">close</span></button>
+            </div>
 
-				</ul>
-			</li>
+            <div id="modalBody" class="modal-body">
+               <div class="form-group">
+                    Espacio:
+               {% if "/space/" not in request.get_full_path %}
+                   <select name="spaceid" id="spaceid">
+                       {% for s in spacesList %}
+                           {% if s.id in spacesFilter %}
+                            <option value={{s.id}}> {{ s.nombre }}</option>
+                           {% endif %}
+                       {% endfor %}
+                   </select>
+               {% endif %}
+                {{ space.name }}
+                </div>
+                <div class="form-group form-inline">
+                    Hora inicio:
+                    <div class="input-group date" data-provide="datepicker">
+                        <input type="text" name="startDate" id="startDate" class="form-control">
+                    </div>
+                </div>
 
-			<li class="events-group">
-				<div class="top-info"><span>Martes</span></div>
+                 <div class="form-group form-inline">
+                     Hora término:
+                    <div class="input-group date" data-provide="datepicker">
+                        <input type="text" name="endDate" id="endDate" class="form-control">
+                    </div>
+                </div>
 
-				<ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="submitReserva">Reservar</button>
+            </div>
 
-					{% for r in reservations.1 %}
+        </div>
+    </div>
+</form>
+</div>
 
-					<li class="single-event" data-start="{{r.1}}" data-end="{{r.2}}" bgcolor="{{r.3}}">
-						<a href="">
-							<em class="event-name">{{r.0}}</em>
-						</a>
-					</li>
+<div id="fullCalModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Reserva</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span> <span class="sr-only">close</span></button>
+            </div>
 
-					{% endfor%}
-				</ul>
-			</li>
+            <div id="modalBody" class="modal-body">
+               <div class="form-group">
+                   <p id="spaceP"></p>
+                </div>
+                <div class="form-group form-inline">
+                    Hora inicio:
+                    <div class="input-group date" data-provide="datepicker">
+                        <input type="date" name="startDate" id="startDate" class="form-control">
+                    </div>
+                </div>
 
-			<li class="events-group">
-				<div class="top-info"><span>Miércoles</span></div>
-
-				<ul>
-					{% for r in reservations.2 %}
-
-					<li class="single-event" data-start="{{r.1}}" data-end="{{r.2}}" bgcolor="{{r.3}}" >
-						<a href="">
-							<em class="event-name">{{r.0}}</em>
-						</a>
-					</li>
-
-					{% endfor%}
-				</ul>
-			</li>
-
-			<li class="events-group">
-				<div class="top-info"><span>Jueves</span></div>
-
-				<ul>
-					{% for r in reservations.3 %}
-
-					<li class="single-event" data-start="{{r.1}}" data-end="{{r.2}}"  bgcolor="{{r.3}}">
-						<a href="">
-							<em class="event-name">{{r.0}}</em>
-						</a>
-					</li>
-
-					{% endfor%}
-				</ul>
-			</li>
-
-			<li class="events-group">
-				<div class="top-info"><span>Viernes</span></div>
-
-				<ul>
-					{% for r in reservations.4 %}
-
-					<li class="single-event" data-start="{{r.1}}" data-end="{{r.2}}" bgcolor="{{r.3}}">
-						<a href="">
-							<em class="event-name">{{r.0}}</em>
-						</a>
-					</li>
-
-					{% endfor%}
-				</ul>
-			</li>
-		</ul>
-
-	</div>
-
-
-
-	<div class="week-select" id="week-select">
-		<div style="text-align: center; margin-right: auto; margin-left: auto; width: 200px; font-size: 18px">
-			<form action="" method="get" class="selectform">
-				<a href="?date={{controls.0}}" role="button"><i class="fas fa-angle-double-left"></i></a>
-			</form>
-			<form action="" method="get" class="selectform">
-				<a href="?date={{controls.1}}" role="button"><i class="fas fa-angle-left"></i></a>
-			</form>
-			<form action="" method="get" class="selectform">
-				<a href="?date={{controls.2}}" role="button"><i class="fas fa-angle-right"></i></a>
-			</form>
-			<form action="" method="get" class="selectform">
-				<a href="?date={{controls.3}}" role="button"><i class="fas fa-angle-double-right"></i></a>
-			</form>
-		</div>
-
-	</div>
+                 <div class="form-group form-inline">
+                     Hora término:
+                    <div class="input-group date" data-provide="datepicker">
+                        <input type="date" name="endDate" id="endDate" class="form-control">
+                    </div>
+                </div>
+            </div>
 
 
-
-
-	<div class="event-modal">
-		<header class="header">
-			<div class="content">
-				<span class="event-date"></span>
-				<h3 class="event-name"></h3>
-			</div>
-
-			<div class="header-bg"></div>
-		</header>
-
-		<div class="body">
-			<div class="event-info"></div>
-			<div class="body-bg"></div>
-		</div>
-
-		<a href="#0" class="close">Close</a>
-	</div>
-
-	<div class="cover-layer"></div>
-</div> <!-- .cd-schedule -->
-<script src="{% static 'js/modernizr.js' %}"></script>
-<script src="{% static 'js/jquery-3.0.0.min.js' %}"></script>
-
-<script src="{% static 'js/main.js' %}"></script> <!-- Resource jQuery -->
+        </div>
+    </div>
+</div>

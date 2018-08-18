@@ -1,0 +1,97 @@
+{% extends 'application_layout.html' %}
+
+{% load static %}
+
+{% block title %}
+  Ficha de préstamo: {{ loan.id }}
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-10">
+                <h1>Información del préstamo</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-10">
+                <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <th>ID:</th>
+                        <td>{{ reservation.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Estado:</th>
+                        <td>
+                            {% if reservation.state == 'A' %}
+                                Aceptado
+                            {% elif reservation.state == 'R' %}
+                                Rechazado
+                            {% elif reservation.state == 'P' %}
+                                Pendiente
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Usuario:</th>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nombre del espacio:</th>
+                        <td>{{ space.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Desde:</th>
+                        <td>{{ reservation.starting_date_time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Hasta:</th>
+                        <td>{{ reservation.ending_date_time }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-10">
+                <h1>Resumen del espacio:</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-5">
+            {% if space.image %}
+                <img src= " {% static space.image.url %}" class="img-fluid" alt="Foto" style="height: 300px" />
+            {% else %}
+                <img class="card-img-top" src="{% static 'img/items/default_article.jpg' %}" alt="Card image cap">
+            {% endif %}
+            </div>
+            <div class="col-5">
+                 <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <th>Nombre:</th>
+                        <td>{{ space.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Descripción:</th>
+                        <td>{{ space.description }}</td>
+                    </tr>
+                     <tr>
+                        <th>Estado:</th>
+                        <td>
+                            {% if space.state == 'D' %}
+                                Disponible
+                            {% elif space.state == 'P' %}
+                                En préstamo
+                            {% elif space.state == 'R' %}
+                                En reparación
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}

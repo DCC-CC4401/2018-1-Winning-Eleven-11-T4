@@ -58,12 +58,10 @@ def verificar_horario_habil(horario):
 @login_required
 def article_request(request):
     if request.method == 'POST':
-        article = Article.objects.get(id = request.POST['article_id'])
+        article = Article.objects.get(id= request.POST['article_id'])
 
         if request.user.enabled:
             try:
-
-
 
                 string_inicio = request.POST['fecha_inicio'] + " " + request.POST['hora_inicio']
                 start_date_time = to_chile_time_normalization(to_datetime(string_inicio))

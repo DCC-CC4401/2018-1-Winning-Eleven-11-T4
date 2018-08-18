@@ -37,3 +37,27 @@ def modify_reservations(request):
                 reservation.save()
 
     return redirect('/admin/actions-panel')
+
+
+def reservations_data(request, reservation_id):
+    try:
+        reservation = Reservation.objects.get(id=reservation_id)
+        space = reservation.space
+        user = reservation.user
+        login_email = request.user.email
+        context = {'reservation': reservation,
+                   'space': space,
+                   'user': user,
+                   'login_email': login_email}
+
+        if login_email == user.email and reservation.state == 'A':
+            if space.state == 'D':
+                context['change_space'] = 'P'
+            elif space.state == 'P':
+                context['change_space'] = 'L'
+            elif space.state == 'R	':
+                context['change_space'] = 'L'
+        return render(request, 'reservations_data.html', context)
+    except Exception as e:
+
+        return redirect('/')
