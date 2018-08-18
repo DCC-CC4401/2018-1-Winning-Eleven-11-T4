@@ -35,6 +35,7 @@ def user_cancel_reservation(request, reservation_id):
             redirect_string = '/space/%d' % space_id
         return redirect(redirect_string , user_id=request.user.id)
 
+
 def modify_reservations(request):
     user = request.user
     if not (user.is_superuser and user.is_staff):
@@ -80,5 +81,4 @@ def reservations_data(request, reservation_id):
                 context['change_space'] = 'L'
         return render(request, 'reservations_data.html', context)
     except Exception as e:
-
         return redirect('/')
