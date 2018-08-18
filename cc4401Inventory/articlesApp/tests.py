@@ -101,6 +101,9 @@ class ArticleTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Los pedidos deben ser hechos al menos con una hora de anticipación.')
 
+
+    """
+    Este test testea una funcionalidad que no debia estar
     def test_article_rquest_view_horario_devolucion(self):
         self.client.login(email='test@email.com', password='12345')
         url = reverse('article_request')
@@ -112,7 +115,7 @@ class ArticleTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Los pedidos deben ser devueltos el mismo día que se entregan.')
-
+    """
     def test_article_rquest_view_horario_fecha_correcta(self):
         self.client.login(email='test@email.com', password='12345')
         url = reverse('article_request')
