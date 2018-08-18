@@ -69,8 +69,6 @@ def article_request(request):
                     messages.warning(request, 'La reserva debe terminar después de iniciar.')
                 elif start_date_time < datetime.now() + timedelta(hours=1):
                     messages.warning(request, 'Los pedidos deben ser hechos al menos con una hora de anticipación.')
-                elif start_date_time.date() != end_date_time.date():
-                    messages.warning(request, 'Los pedidos deben ser devueltos el mismo día que se entregan.')
                 elif not verificar_horario_habil(start_date_time) and not verificar_horario_habil(end_date_time):
                     messages.warning(request, 'Los pedidos deben ser hechos en horario hábil.')
                 else:
