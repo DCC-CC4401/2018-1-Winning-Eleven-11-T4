@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect
 from spacesApp.models import Space
+from django.contrib.auth.decorators import login_required
 from reservationsApp.models import Reservation
 import datetime
 from django.contrib import messages
 from datetime import timedelta
+import os
+from django.core.files import File
+import urllib
 
 
 def space_data(request, space_id):
@@ -101,3 +105,48 @@ def verificar_horario_habil(horario):
         return False
 
     return True
+
+
+@login_required
+def space_data_admin(request, space_id):
+    if not request.user.is_staff:
+        return redirect('/')
+    else:
+        try:
+            space = Space.objects.get(id=space_id)
+            context = {
+                'space': space
+            }
+            return render(request, 'space_data_admin.html', context)
+        except:
+            return redirect('/')
+
+
+@login_required
+def space_edit_fields(request, space_id):
+    if request.method == "POST":
+        s = Space.objects.get(id=space_id)
+        if request.POST["name"] != "":
+            s.name = request.POST["name"]
+        s.description = request.POST["description"]
+
+        u_file = request.FILES.get('image', False)
+        if 'image' in request.FILES:
+            extension = os.path.splitext(u_file.name)[1]
+            s.image.save(str(space_id)+"_image"+extension, u_file)
+
+        s.save()
+        return redirect('/admin/items-panel/')
+    return redirect('/space/' + str(space_id) + '/edit')
+
+
+
+
+
+
+
+
+
+
+
+
