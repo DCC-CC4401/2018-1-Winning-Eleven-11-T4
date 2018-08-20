@@ -12,7 +12,6 @@ from utils.time_utils import to_chile_time_normalization, to_datetime, is_non_wo
 
 
 
-
 @login_required
 def article_data(request, article_id):
     if request.user.is_staff:
@@ -50,6 +49,10 @@ def article_data(request, article_id):
         print(e)
         return redirect('/')
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> seba
 
 def verificar_horario_habil(horario):
     return not is_non_workday(horario) and not (horario.hour < 9 or horario.hour > 18)
@@ -107,7 +110,6 @@ def article_data_admin(request, article_id):
             return redirect('/')
 
 
-
 @login_required
 def article_edit_name(request, article_id):
 
@@ -131,7 +133,6 @@ def article_edit_image(request, article_id):
     return redirect('/article/' + str(article_id) + '/edit')
 
 
-
 @login_required
 def article_edit_description(request, article_id):
     if request.method == "POST":
@@ -140,3 +141,6 @@ def article_edit_description(request, article_id):
         a.save()
 
     return redirect('/article/' + str(article_id) + '/edit')
+<<<<<<< HEAD
+=======
+>>>>>>> seba
