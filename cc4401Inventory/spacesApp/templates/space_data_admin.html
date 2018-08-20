@@ -1,71 +1,96 @@
-
-
 {% extends 'application_layout.html' %}
 
 {% load static %}
 
 {% block title %}
- Editando espacio: {{ space.name }}
+  Editar Espacio: {{ space.name }}
 {% endblock %}
 
+
 {% block body %}
-    <div class="edit-container">
+    <div class="i-container">
 
-        <div class="col-md-4 offset-md-4 edit-flex-container edit-box">
-            <h1 class="space-name">
-              {{ space.name }}
-            </h1>
-            <h1>
-            {% if space.state == "D" %}
-                <span class="badge badge-pill badge-success"><i class="fas fa-chevron-left"></i> {{  space.get_state_display }}</span>
-              {% elif space.state == "P" %}
-                <span class="badge badge-pill badge-primary"><i class="fas fa-chevron-left"></i> {{  space.get_state_display }}</span>
-              {% elif space.state == "L" %}
-                <span class="badge badge-pill badge-danger"><i class="fas fa-chevron-left"></i> {{  space.get_state_display }}</span>
-              {% elif space.state == "R" %}
-                <span class="badge badge-pill badge-warning"><i class="fas fa-chevron-left"></i> {{  space.get_state_display }}</span>
-              {% endif %}
-           </h1>
+        <div class="i-box one">
+            <div>
+              <h3>{{ space.name }}
 
-            {% if space.image %}
-                <img src= " {% static space.image.url %}" class="img-fluid" alt="Foto" style="height: 400px" />
-            {% else %}
-                <img class="card-img-top" src="{% static 'img/items/default_article.jpg' %}" alt="Card image cap">
-            {% endif %}
+                  <span class="space-name">
+                        {% if space.state == "D" %}
+                        <span class="badge badge-pill badge-success"><i class="fas fa-chevron-left"></i> {{  space.get_state_display }}</span>
+                        {% elif space.state == "P" %}
+                        <span class="badge badge-pill badge-primary"><i class="fas fa-chevron-left"></i> {{  space.get_state_display }}</span>
+                        {% elif space.state == "L" %}
+                        <span class="badge badge-pill badge-danger"><i class="fas fa-chevron-left"></i> {{  space.get_state_display }}</span>
+                        {% elif space.state == "R" %}
+                        <span class="badge badge-pill badge-warning"><i class="fas fa-chevron-left"></i> {{  space.get_state_display }}</span>
+                        {% endif %}
+                  </span>
+              </h3>
+            </div>
 
+            <div class="i-photo">
+                {% if space.image %}
+                    <img src= " {% static space.image.url %}" class="img-fluid" alt="Foto" style="height: 400px" />
+                {% else %}
+                    <img class="card-img-top" src="{% static 'img/items/default_article.jpg' %}" alt="Card image cap">
+                {% endif %}
+            </div>
+
+            <div class="i-info">
             <div class="card">
                 <div class="card-header" id="space-description-title">Descripción</div>
                     <div class="card-body">
-                          <p class="card-text">{{ space.description }}</p>
+                          <textarea class="card-text i-description">{{ space.description }}</textarea>
                           <p class="card-text">Capacidad: {{ space.capacity }} personas</p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-4 offset-md-4 edit-flex-container edit-box">
-                <div class="edit-box-header">
-                    <form action="edit_fields" method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="form-group">
-                        <label class="field-label" >Nombre del espacio</label>
-                        <input class="form-control"  type="text" name="name" placeholder="Nuevo nombre del espacio">  </input>
-                        </div>
-
-                        <div class="form-group">
-                        <label class="field-label" >Foto</label>
-                        <input class="form-control" type="file" name="image">  </input>
-                        </div>
-
-                        <div class="form-group">
-                        <label class="field-label" >Descripción</label>
-                        <textarea class="form-control edit-textarea" type="text"
-                                  name="description">{{ space.description }} </textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                    </form>
+        <div class="i-box two">
+            <form action="edit_fields" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div>
+                <h3>Editar Información de Espacio</h3>
                 </div>
 
-            </div>
+                <div class="form-group">
+                <label class="field-label" >Nombre del espacio</label>
+                <input class="form-control"  type="text" name="name" placeholder="Nuevo nombre del espacio">
+                </div>
+
+                <div class="form-group">
+                <label class="field-label" >Estado</label>
+                    {% for key, value in space.STATES %}
+                        {% if space.state == key %}
+                        <input class="form-control"  type="radio" name="state" value="{{ key }}" checked/>{{ value }}
+                        {% else %}
+                        <input class="form-control"  type="radio" name="state" value="{{ key }}"/>{{ value }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                <label class="field-label" >Foto</label>
+                <input class="form-control" type="file" name="image">
+                </div>
+
+                <div class="form-group">
+                <label class="field-label" >Descripción</label>
+                <textarea class="form-control i-description"
+                          type="text" name="description">{{ space.description }} </textarea>
+                </div>
+
+                <div class="form-group">
+                <label class="field-label" >Capacidad</label>
+                <input class="form-control"  type="number" step="1" name="capacity" >
+                </div>
+
+                <button type="submit" class="btn btn-success i-btn">Guardar</button>
+                <a class="btn btn-danger" href="{% url 'items-panel' %}" role="button">Cancelar</a>
+            </form>
+        </div>
+
     </div>
+
 {% endblock %}

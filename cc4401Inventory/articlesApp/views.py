@@ -106,37 +106,26 @@ def article_data_admin(request, article_id):
 
 
 @login_required
-def article_edit_name(request, article_id):
-
+def article_edit_fields(request, article_id):
     if request.method == "POST":
         a = Article.objects.get(id=article_id)
-        a.name = request.POST["name"]
-        a.save()
-    return redirect('/article/'+str(article_id)+'/edit')
 
+        if request.POST["name"] != "":
+            a.name = request.POST["name"]
 
-@login_required
-def article_edit_image(request, article_id):
-
-    if request.method == "POST":
-        u_file = request.FILES["image"]
-        extension = os.path.splitext(u_file.name)[1]
-        a = Article.objects.get(id=article_id)
-        a.image.save(str(article_id)+"_image"+extension, u_file)
-        a.save()
-
-    return redirect('/article/' + str(article_id) + '/edit')
-
-
-@login_required
-def article_edit_description(request, article_id):
-    if request.method == "POST":
-        a = Article.objects.get(id=article_id)
         a.description = request.POST["description"]
+
+        if request.POST["state"] != "":
+            a.state = request.POST["state"]
+
+        u_file = request.FILES.get('image', False)
+        if 'image' in request.FILES:
+            extension = os.path.splitext(u_file.name)[1]
+            a.image.save(str(article_id)+"_image"+extension, u_file)
+
         a.save()
-
-    return redirect('/article/' + str(article_id) + '/edit')
-
+        return redirect('/admin/items-panel/')
+    return redirect('/space/' + str(article_id) + '/edit')
 
 @login_required
 def delete_item(request,article_id):
@@ -144,4 +133,3 @@ def delete_item(request,article_id):
     item = Article.objects.get(id=article_id)
     item.delete()
     return redirect('/admin/items-panel/')
-
