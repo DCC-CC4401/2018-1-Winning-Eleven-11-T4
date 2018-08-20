@@ -188,12 +188,18 @@ def add_item(request):
 def add_new_item(request):
 
     context = {'error_message': '', }
+
+
     if request.method == 'POST':
         name = request.POST['name']
         description = request.POST['description']
-        image = request.FILES['image']
-        tmp_file = os.path.join('mainApp/static/mainApp/img/items', image.name)
-        path = default_storage.save(tmp_file, ContentFile(image.read()))
+        try:
+            image = request.FILES['image']
+            tmp_file = os.path.join('mainApp/static/mainApp/img/items', image.name)
+            path = default_storage.save(tmp_file, ContentFile(image.read()))
+        except:
+            path = 'img/items/default_article.jpg'
+
         new_item = Article(name=name, description=description, image = path, state='D')
         new_item.save()
         messages.success(request, 'Articulo agregado correctamente.')
