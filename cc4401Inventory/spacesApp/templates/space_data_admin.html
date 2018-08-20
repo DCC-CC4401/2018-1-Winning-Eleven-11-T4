@@ -8,11 +8,6 @@
 
 
 {% block body %}
-<style>
-
-
-</style>
-
     <div class="i-container">
 
         <div class="i-box one">
@@ -74,9 +69,9 @@
                 <textarea class="form-control edit-textarea" type="text"
                           name="description">{{ space.description }} </textarea>
                 </div>
-                <div></div>
+
                 <button type="submit" class="btn btn-success i-btn">Guardar</button>
-                <button type="button" class="btn btn-danger">Cancelar</button>
+                <a class="btn btn-danger" href="{% url 'items-panel' %}" role="button">Cancelar</a>
             </form>
         </div>
 
