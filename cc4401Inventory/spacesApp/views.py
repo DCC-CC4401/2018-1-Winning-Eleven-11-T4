@@ -27,7 +27,8 @@ def space_data(request, space_id):
                     "start": r.starting_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
                     "end": r.ending_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
                     "color": color,
-                    "estado": r.state
+                    "estado": r.state,
+                    "id": r.id
                 }
                 reservations_list.append(reserva_dic)
         if request.method == 'POST':
@@ -80,7 +81,8 @@ def space_data(request, space_id):
             url = '/reservation/%d' % reservation.id
             reservation_info = {
                 'content': content,
-                'url': url
+                'url': url,
+                'id': reservation.id
             }
 
             reservations_last_ten.append(reservation_info)
