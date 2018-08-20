@@ -20,7 +20,7 @@ def article_data(request, article_id):
         article = Article.objects.get(id=article_id)
 
         last_loans = Loan.objects.filter(article=article,
-                                         ending_date_time__lt=datetime.now(tz=pytz.utc)
+                                         ending_date_time__lt=datetime.now()
                                          ).order_by('-ending_date_time')[:10]
 
         loan_list = list()
@@ -31,10 +31,20 @@ def article_data(request, article_id):
             starting_hour = loan.starting_date_time.strftime("%H:%M")
             ending_hour = loan.ending_date_time.strftime("%H:%M")
 
+            content = ''
+
             if starting_day == ending_day:
-                loan_list.append(starting_day+" "+starting_hour+" a "+ending_hour)
+                content = starting_day + " " + starting_hour + " a " + ending_hour
             else:
-                loan_list.append(starting_day + ", " + starting_hour + " a " +ending_day + ", " +ending_hour)
+                content = starting_day + ", " + starting_hour + " a " + ending_day + ", " + ending_hour
+
+            url = '/loans/%d' % loan.id
+            reservation_info = {
+                'content': content,
+                'url': url
+            }
+
+            loan_list.append(reservation_info)
 
 
         context = {

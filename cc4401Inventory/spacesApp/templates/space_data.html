@@ -48,7 +48,7 @@
             <div class="reservation-history">
                 <ul>
                     {% for elemento in last_loans %}
-                        <li>{{ elemento }}</li>
+                        <li><a href="{{ elemento.url }}">{{ elemento.content }}</a></li>
                     {% endfor %}
                 </ul>
             </div>
