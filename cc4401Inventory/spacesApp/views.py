@@ -140,13 +140,3 @@ def space_edit_fields(request, space_id):
     return redirect('/space/' + str(space_id) + '/edit')
 
 
-
-
-
-
-
-
-
-
-
-
