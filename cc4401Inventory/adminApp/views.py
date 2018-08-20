@@ -8,6 +8,7 @@ from mainApp.models import User
 from datetime import datetime, timedelta, date
 from django.utils.timezone import localtime
 
+
 @login_required
 def user_panel(request):
     user = request.user
@@ -18,6 +19,7 @@ def user_panel(request):
         'users': users
     }
     return render(request, 'user_panel.html', context)
+
 
 @login_required
 def items_panel(request):
@@ -32,10 +34,10 @@ def items_panel(request):
     }
     return render(request, 'items_panel.html', context)
 
+
 @login_required
 def actions_panel(request):
     user = request.user
-
     if not (user.is_superuser and user.is_staff):
         return redirect('/')
     try:
@@ -47,9 +49,9 @@ def actions_panel(request):
     coloresP = ['rgba(102,153,102,0.7)', 'rgba(153,102,102,0.7)', 'rgba(102,102,153,0.7)', 'rgba(153,127,102,0.5)',
                 'rgba(153,102,153,0.7)', 'rgba(102,153,153,0.7)']
     coloresA = ['rgba(63,191,63,0.9)', 'rgba(191,63,63,0.9)', 'rgba(63,63,191,0.9)', 'rgba(191,127,63,0.9)',
-               'rgba(191,63,191,0.9)', 'rgba(63,191,191,0.9)']
-    spaces_list=[]
-    reservations_list=[]
+                'rgba(191,63,191,0.9)', 'rgba(63,191,191,0.9)']
+    spaces_list = []
+    reservations_list = []
     space_filter = []
     i = 0
     for s in spaces:
@@ -89,28 +91,78 @@ def actions_panel(request):
                     reservations_list.append(reserva_dic)
 
     actual_date = datetime.now()
-    loans = Loan.objects.all().order_by('starting_date_time')
-    try:
-        if request.method == "GET":
-            if request.GET["filter"]=='vigentes':
-                loans = Loan.objects.filter(ending_date_time__gt=actual_date).order_by('starting_date_time')
-            elif request.GET["filter"]=='caducados':
-                loans = Loan.objects.filter(ending_date_time__lt=actual_date, article__state='P').order_by('starting_date_time')
-            elif request.GET["filter"]=='perdidos':
-                loans = Loan.objects.filter(ending_date_time__lt=actual_date, article__state='L').order_by('starting_date_time')
-            else:
-                loans = Loan.objects.all().order_by('starting_date_time')
-    except:
-        loans = Loan.objects.all().order_by('starting_date_time')
+    pending_reservations = Reservation.objects.filter(state='P').order_by('starting_date_time')
 
+    try:
+        if request.method == 'POST':
+            if request.POST["loan_action"] == 'aceptar':
+                some_loans = Loan.objects.filter(id__in=request.POST.getlist("loan_selected"))
+                for a_loan in some_loans:
+                    a_loan.state = 'A'
+                    a_loan.save()
+            elif request.POST["loan_action"] == 'rechazar':
+                some_loans = Loan.objects.filter(id__in=request.POST.getlist("loan_selected"))
+                for a_loan in some_loans:
+                    a_loan.state = 'R'
+                    a_loan.save()
+            elif request.POST["loan_action"] == 'entregado':
+                some_loans = Loan.objects.filter(id__in=request.POST.getlist("loan_selected"))
+                for a_loan in some_loans:
+                    article = Article.objects.get(id=a_loan.article.id)
+                    article.state = 'D'
+                    article.save()
+            elif request.POST["loan_action"] == 'perdido':
+                some_loans = Loan.objects.filter(id__in=request.POST.getlist("loan_selected"))
+                for a_loan in some_loans:
+                    article = Article.objects.get(id=a_loan.article.id)
+                    article.state = 'L'
+                    article.save()
+            elif request.POST["loan_action"] == 'encontrado':
+                some_loans = Loan.objects.filter(id__in=request.POST.getlist("loan_selected"))
+                for a_loan in some_loans:
+                    article = Article.objects.get(id=a_loan.article.id)
+                    article.state = 'D'
+                    article.save()
+    except:
+        redirect('/admin/actions-panel/')
+    loans = Loan.objects.filter(ending_date_time__gt=actual_date,
+                                state='A').order_by('starting_date_time')
+    loan_filter = 'activos'
+    try:
+        if request.method == "POST":
+            if request.POST["filter"] == 'activos':
+                loans = Loan.objects.filter(ending_date_time__gt=actual_date,
+                                            state='A').order_by('starting_date_time')
+                loan_filter = 'activos'
+            elif request.POST["filter"] == 'entregados':
+                loans = Loan.objects.filter(ending_date_time__lt=actual_date, state='A',
+                                            article__state='D').order_by('starting_date_time')
+                loan_filter = 'entregados'
+            elif request.POST["filter"] == 'pendientes':
+                loans = Loan.objects.filter(starting_date_time__gt=actual_date,
+                                            state='P').order_by('starting_date_time')
+                loan_filter = 'pendientes'
+            elif request.POST["filter"] == 'caducados':
+                loans = Loan.objects.filter(ending_date_time__lt=actual_date, state='A',
+                                            article__state='P').order_by('starting_date_time')
+                loan_filter = 'caducados'
+            elif request.POST["filter"] == 'perdidos':
+                loans = Loan.objects.filter(ending_date_time__lt=actual_date, state='A',
+                                            article__state='L').order_by('starting_date_time')
+                loan_filter = 'perdidos'
+    except:
+        loans = Loan.objects.filter(ending_date_time__lt=actual_date, state='A',
+                                    article__state='P').order_by('starting_date_time')
+        loan_filter = 'activos'
 
     context = {
-        'reservations_query': reservations,
+        'reservations_query': pending_reservations,
         'loans': loans,
         'current_date': current_date,
         'reservations': reservations_list,
         'spacesList': spaces_list,
         'spacesFilter': space_filter,
-        'request': request
+        'request': request,
+        'loan_filter': loan_filter
     }
     return render(request, 'actions_panel.html', context)
