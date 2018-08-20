@@ -111,9 +111,14 @@ def article_data_admin(request, article_id):
 def article_edit_fields(request, article_id):
     if request.method == "POST":
         a = Article.objects.get(id=article_id)
+
         if request.POST["name"] != "":
             a.name = request.POST["name"]
+
         a.description = request.POST["description"]
+
+        if request.POST["state"] != "":
+            a.state = request.POST["state"]
 
         u_file = request.FILES.get('image', False)
         if 'image' in request.FILES:

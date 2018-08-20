@@ -128,9 +128,17 @@ def space_edit_fields(request, space_id):
         s = Space.objects.get(id=space_id)
         if request.POST["name"] != "":
             s.name = request.POST["name"]
+
         s.description = request.POST["description"]
 
+        if request.POST["state"] != "":
+            s.state = request.POST["state"]
+
         u_file = request.FILES.get('image', False)
+
+        if request.POST["capacity"] != "":
+            s.capacity = request.POST["capacity"]
+
         if 'image' in request.FILES:
             extension = os.path.splitext(u_file.name)[1]
             s.image.save(str(space_id)+"_image"+extension, u_file)

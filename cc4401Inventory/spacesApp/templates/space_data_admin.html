@@ -40,7 +40,7 @@
             <div class="card">
                 <div class="card-header" id="space-description-title">Descripción</div>
                     <div class="card-body">
-                          <p class="card-text">{{ space.description }}</p>
+                          <textarea class="card-text i-description">{{ space.description }}</textarea>
                           <p class="card-text">Capacidad: {{ space.capacity }} personas</p>
                     </div>
                 </div>
@@ -56,18 +56,34 @@
 
                 <div class="form-group">
                 <label class="field-label" >Nombre del espacio</label>
-                <input class="form-control"  type="text" name="name" placeholder="Nuevo nombre del espacio">  </input>
+                <input class="form-control"  type="text" name="name" placeholder="Nuevo nombre del espacio">
+                </div>
+
+                <div class="form-group">
+                <label class="field-label" >Estado</label>
+                    {% for key, value in space.STATES %}
+                        {% if space.state == key %}
+                        <input class="form-control"  type="radio" name="state" value="{{ key }}" checked/>{{ value }}
+                        {% else %}
+                        <input class="form-control"  type="radio" name="state" value="{{ key }}"/>{{ value }}
+                        {% endif %}
+                    {% endfor %}
                 </div>
 
                 <div class="form-group">
                 <label class="field-label" >Foto</label>
-                <input class="form-control" type="file" name="image">  </input>
+                <input class="form-control" type="file" name="image">
                 </div>
 
                 <div class="form-group">
                 <label class="field-label" >Descripción</label>
-                <textarea class="form-control edit-textarea" type="text"
-                          name="description">{{ space.description }} </textarea>
+                <textarea class="form-control i-description"
+                          type="text" name="description">{{ space.description }} </textarea>
+                </div>
+
+                <div class="form-group">
+                <label class="field-label" >Capacidad</label>
+                <input class="form-control"  type="number" step="1" name="capacity" >
                 </div>
 
                 <button type="submit" class="btn btn-success i-btn">Guardar</button>
