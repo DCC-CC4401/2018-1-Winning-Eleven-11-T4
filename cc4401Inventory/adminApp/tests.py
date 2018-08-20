@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.contrib.messages import get_messages
 from datetime import datetime, timedelta
 
-class ArticleTest(TestCase):
+class AdminTest(TestCase):
 
     def setUp(self):
         date_in1 = datetime(2018, 8, 29, 12, 00)
