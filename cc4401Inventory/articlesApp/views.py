@@ -10,7 +10,6 @@ import pytz
 from django.contrib import messages
 
 
-
 @login_required
 def article_data(request, article_id):
     if request.user.is_staff:
@@ -47,6 +46,7 @@ def article_data(request, article_id):
     except Exception as e:
         print(e)
         return redirect('/')
+
 
 def verificar_horario_habil(horario):
     if horario.isocalendar()[2] > 5:
@@ -105,7 +105,6 @@ def article_data_admin(request, article_id):
             return redirect('/')
 
 
-
 @login_required
 def article_edit_name(request, article_id):
 
@@ -129,7 +128,6 @@ def article_edit_image(request, article_id):
     return redirect('/article/' + str(article_id) + '/edit')
 
 
-
 @login_required
 def article_edit_description(request, article_id):
     if request.method == "POST":
@@ -138,6 +136,7 @@ def article_edit_description(request, article_id):
         a.save()
 
     return redirect('/article/' + str(article_id) + '/edit')
+
 
 @login_required
 def delete_item(request,article_id):
