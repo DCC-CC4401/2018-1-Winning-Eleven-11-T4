@@ -7,6 +7,8 @@ from reservationsApp.models import Reservation
 from spacesApp.models import Space
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+
+
 @login_required
 def landing_articles(request):
     if request.user.is_staff:
@@ -18,8 +20,6 @@ def landing_articles(request):
 
 @login_required
 def landing_spaces(request):
-
-
     reservations = Reservation.objects.exclude(state='R').order_by('starting_date_time')
     spaces = Space.objects.all()
     coloresP = ['rgba(102,153,102,0.7)', 'rgba(153,102,102,0.7)', 'rgba(102,102,153,0.7)', 'rgba(153,127,102,0.5)',
@@ -58,7 +58,7 @@ def landing_spaces(request):
                     end_date_time = datetime.datetime.strptime(string_endDate, '%Y-%m-%d %H:%M')
                     if start_date_time > end_date_time:
                         messages.warning(request, 'La reserva debe terminar después de iniciar.')
-                    elif start_date_time < datetime.datetime.now() + timedelta(hours=1):
+                    elif (start_date_time < datetime.datetime.now() + timedelta(hours=1)) and space.name != 'quincho':
                         messages.warning(request, 'Los pedidos deben ser hechos al menos con una hora de anticipación.')
                     elif start_date_time.date() != end_date_time.date():
                         messages.warning(request, 'Los pedidos deben ser devueltos el mismo día que se entregan.')
@@ -140,6 +140,7 @@ def search(request):
 
         products = None if (request.GET['query'] == "") else articles
         return landing_search(request, products)
+
 
 def verificar_horario_habil(horario):
     if horario.isocalendar()[2] > 5:

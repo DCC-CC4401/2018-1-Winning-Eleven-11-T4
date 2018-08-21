@@ -35,7 +35,11 @@
             <th scope="col">ID</th>
             <th scope="col">Nombre del Articulo</th>
             <th scope="col">Estado</th>
-            <th scope="col"></th>
+            <th scope="col" class="center-column">
+                <a href="{% url 'add_item'%}" class="table-button add-button">
+                    <i class="fas fa-plus-circle"></i>
+                </a>
+            </th>
           </tr>
           </thead>
           <tbody>
@@ -43,10 +47,10 @@
           <tr>
             <td>{{ article.id }}</td>
             <td>{{ article.name }}</td>
-            <td>{{ article.state }}</td>
+            <td>{{ article.get_state_display }}</td>
             <td class="center-column">
               <a class="table-button" href="{% url 'article_data_admin' article.id %}"><i class="fas fa-edit"></i></a>
-              <a class="table-button" href="#"><i class="fas fa-trash"></i></a>
+              <a class="table-button" href="{% url 'delete_item' article.id %}"><i class="fas fa-trash"></i></a>
             </td>
           </tr>
           {% endfor %}
@@ -71,7 +75,7 @@
             <td>{{ space.name }}</td>
             <td>{{ space.get_state_display }}</td>
             <td class="center-column">
-              <a class="table-button" href="#"><i class="fas fa-edit"></i></a>
+              <a class="table-button" href="{% url 'space_data_admin' space.id %}"><i class="fas fa-edit"></i></a>
               <a class="table-button" href="#"><i class="fas fa-trash"></i></a>
             </td>
           </tr>

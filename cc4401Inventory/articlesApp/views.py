@@ -6,6 +6,7 @@ from django.db import models
 from datetime import datetime, timedelta
 
 import random, os
+import pytz
 from django.contrib import messages
 
 from utils.time_utils import to_chile_time_normalization, to_datetime, is_non_workday
@@ -34,10 +35,20 @@ def article_data(request, article_id):
             starting_hour = loan.starting_date_time.strftime("%H:%M")
             ending_hour = loan.ending_date_time.strftime("%H:%M")
 
+            content = ''
+
             if starting_day == ending_day:
-                loan_list.append(starting_day+" "+starting_hour+" a "+ending_hour)
+                content = starting_day + " " + starting_hour + " a " + ending_hour
             else:
-                loan_list.append(starting_day + ", " + starting_hour + " a " +ending_day + ", " +ending_hour)
+                content = starting_day + ", " + starting_hour + " a " + ending_day + ", " + ending_hour
+
+            url = '/loans/%d' % loan.id
+            reservation_info = {
+                'content': content,
+                'url': url
+            }
+
+            loan_list.append(reservation_info)
 
 
         context = {
@@ -107,36 +118,36 @@ def article_data_admin(request, article_id):
             return redirect('/')
 
 
+@login_required
+def article_edit_fields(request, article_id):
+    if request.method == "POST":
+        try:
+            a = Article.objects.get(id=article_id)
+
+            if request.POST["name"] != "":
+                a.name = request.POST["name"]
+
+            a.description = request.POST["description"]
+
+            if request.POST["state"] != "":
+                a.state = request.POST["state"]
+
+            u_file = request.FILES.get('image', False)
+            if 'image' in request.FILES:
+                extension = os.path.splitext(u_file.name)[1]
+                a.image.save(str(article_id)+"_image"+extension, u_file)
+
+            a.save()
+            messages.success(request, 'Artículo editado exitosamente')
+            return redirect('/admin/items-panel/')
+        except Exception as e:
+            messages.warning(request, 'Error al editar')
+
+    return redirect('/space/' + str(article_id) + '/edit')
 
 @login_required
-def article_edit_name(request, article_id):
+def delete_item(request, article_id):
 
-    if request.method == "POST":
-        a = Article.objects.get(id=article_id)
-        a.name = request.POST["name"]
-        a.save()
-    return redirect('/article/'+str(article_id)+'/edit')
-
-
-@login_required
-def article_edit_image(request, article_id):
-
-    if request.method == "POST":
-        u_file = request.FILES["image"]
-        extension = os.path.splitext(u_file.name)[1]
-        a = Article.objects.get(id=article_id)
-        a.image.save(str(article_id)+"_image"+extension, u_file)
-        a.save()
-
-    return redirect('/article/' + str(article_id) + '/edit')
-
-
-
-@login_required
-def article_edit_description(request, article_id):
-    if request.method == "POST":
-        a = Article.objects.get(id=article_id)
-        a.description = request.POST["description"]
-        a.save()
-
-    return redirect('/article/' + str(article_id) + '/edit')
+    item = Article.objects.get(id=article_id)
+    item.delete()
+    return redirect('/admin/items-panel/')

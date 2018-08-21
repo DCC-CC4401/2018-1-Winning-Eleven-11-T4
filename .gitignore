@@ -62,3 +62,4 @@ db.sqlite3
 **/mainApp/static/mainApp/img/items/*
 **/migrations
 
+*.html___jb_tmp___

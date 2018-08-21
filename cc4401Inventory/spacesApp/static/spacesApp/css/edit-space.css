@@ -1,0 +1,61 @@
+    .i-container{
+        display: flex;
+        margin: 0;
+        align-items: center ;
+        flex-wrap: wrap;
+        border-radius: 10px;
+        justify-content: center;
+
+    }
+
+    .i-box{
+        min-width: 200px;
+        max-width: 600px;
+        width: 400px;
+        height: 700px;
+        margin: 20px;
+        flex-grow: 1;
+        border-radius: 10px;
+        padding:10px;
+
+    }
+
+    .one{
+        background-color: rgba(217, 219, 219, 0.4);
+    }
+
+    .two{
+        background-color: rgba(217, 219, 219, 0.4);
+    }
+
+    .two label.field-label {
+        font-weight: 600;
+        color: #6c9cff;
+    }
+
+
+    .i-photo{
+        margin-top: 10px;
+        margin-bottom: 10px;
+
+    }
+
+    .i-photo > img {
+        border-radius: 10px;
+        width: 100%;
+        height: 100%;
+    }
+
+    .i-description{
+        width: 100%;
+        height: 100px;
+        resize: none;
+        border: none;
+    }
+
+
+        .i-description-form{
+        width: 100%;
+        height: 200px;
+        resize: none;
+    }
