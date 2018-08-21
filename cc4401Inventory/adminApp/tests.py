@@ -11,29 +11,30 @@ from datetime import datetime, timedelta
 class AdminTest(TestCase):
 
     def setUp(self):
-        date_in1 = datetime(2018, 8, 29, 12, 00)
-        date_in2 = datetime(2018, 8, 30, 12, 00)
-        date_fin1 = datetime(2018, 8, 29, 13, 00)
-        date_fin2 = datetime(2018, 8, 30, 13, 00)
-        self.article = Article.objects.create(name='guitarra', description='una guitarra', state='D')
+        date_in1 = datetime(2018, 8, 28, 12, 00)
+        date_in2 = datetime(2018, 8, 29, 12, 00)
+        date_fin1 = datetime(2018, 8, 28, 13, 00)
+        date_fin2 = datetime(2018, 8, 29, 13, 00)
+        self.article = Article.objects.create(name='guitarra', description='una guitarra', state='P')
+        self.article2 = Article.objects.create(name='guitarra_perdida', description='una guitarra', state='P')
         self.space = Space.objects.create(name='Espacio1', description='un espacio', state='D')
         self.user = User.objects.create(email='test@email.com', is_staff=True, is_superuser=True)
         self.user.set_password('12345')
         self.user.save()
-        #reserva 1 el 29/08/2018 desde 12pm a 13pm
-        #reserva 2 el 30/08/2018 desde 12pm a 13pm
+        #reserva 1 el 28/08/2018 desde 12pm a 13pm
+        #reserva 2 el 29/08/2018 desde 12pm a 13pm
         #Se agrega la reserva2 antes que la reserva1
         self.reservation2 = Reservation.objects.create(space=self.space, starting_date_time=date_in2,
                                       ending_date_time=date_fin2, user=self.user)
         self.reservation1 = Reservation.objects.create(space=self.space, starting_date_time=date_in1,
                                       ending_date_time=date_fin1, user=self.user)
-        #prestamo 1 el 29/08/2018 desde 12pm a 13pm, perdido
-        #prestamo 2 el 30/08/2018 desde 12pm a 13pm, caducado
+        #prestamo 1 el 28/08/2018 desde 12pm a 13pm, perdido
+        #prestamo 2 el 29/08/2018 desde 12pm a 13pm, caducado
         #Se agrega el loan2 antes que el loan1
-        self.loan2 = Loan.objects.create(article=self.article, starting_date_time=date_in2,
-                                      ending_date_time=date_fin2, user=self.user, state='L')
+        self.loan2 = Loan.objects.create(article=self.article2, starting_date_time=date_in2,
+                                      ending_date_time=date_fin2, user=self.user, state='A')
         self.loan1 = Loan.objects.create(article=self.article, starting_date_time=date_in1,
-                                      ending_date_time=date_fin1, user=self.user, state='P')
+                                      ending_date_time=date_fin1, user=self.user, state='A')
 
 
 
@@ -51,7 +52,10 @@ class AdminTest(TestCase):
     def test_loans_ordered_by_starting_date_time(self):
         self.client.login(email='test@email.com', password='12345')
         url = reverse('actions-panel')
-        response = self.client.get(url)
+        data = {
+            'filter': 'activos'
+        }
+        response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'actions_panel.html')
         loans = response.context['loans']
@@ -61,35 +65,47 @@ class AdminTest(TestCase):
 
     def test_loans_filtered_caducados(self):
         self.client.login(email='test@email.com', password='12345')
+        self.loan1.ending_date_time = datetime(2017, 8, 28, 12, 00)
+        self.loan1.save()
         url = reverse('actions-panel')
-        response = self.client.get(url, {'filter': 'caducados'})
+        data = {
+            'filter': 'caducados'
+        }
+        response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'actions_panel.html')
         loans = response.context['loans']
         #solo hay uno caducado
-        self.assertEqual(self.loan1.state,'P')
+        self.assertEqual(self.loan1.state, 'A')
+        self.assertEqual(self.loan1.article.state, 'P')
         self.assertEqual(loans[0], self.loan1)
 
     def test_loans_filtered_perdidos(self):
         self.client.login(email='test@email.com', password='12345')
+        self.article2.state = 'L'
+        self.article2.save()
         url = reverse('actions-panel')
-        response = self.client.get(url, {'filter': 'perdidos'})
+        data = {
+            'filter': 'perdidos'
+        }
+        response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'actions_panel.html')
         loans = response.context['loans']
         #solo hay uno perdido
-        self.assertEqual(self.loan2.state,'L')
+        self.assertEqual(self.loan2.state, 'A')
+        self.assertEqual(self.loan2.article.state, 'L')
         self.assertEqual(loans[0],self.loan2)
 
     def test_loans_filtered_vigentes(self):
         self.client.login(email='test@email.com', password='12345')
         url = reverse('actions-panel')
-        response = self.client.get(url, {'filter':'vigentes'})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'actions_panel.html')
         loans = response.context['loans']
-        #no hay vigentes
-        self.assertEqual(len(loans),0)
+        #hay 2 activos
+        self.assertEqual(len(loans),2)
 
     def test_check_pend_reservations_and_accept_one(self):
         self.client.login(email='test@email.com', password='12345')
@@ -125,7 +141,7 @@ class AdminTest(TestCase):
         url = reverse('modify_reservations')
         data = {
             'selected': selected,
-            'accept': 0
+            'accept': 1
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
