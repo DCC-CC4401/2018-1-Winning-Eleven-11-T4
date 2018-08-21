@@ -119,15 +119,26 @@ class ArticleTest(TestCase):
         admin.is_staff = True
         self.client.login(email=admin.email, password='12345')
 
-        self.assertEqual(self.my_article.name, 'guitarra')
-        self.assertEqual(self.my_article.description, 'una guitarra')
-        self.assertEqual(self.my_article.image, self.test_image.name)
-        self.assertEqual(self.my_article.state, 'D')
+        article = Article.objects.get(id='1')
 
-        url = reverse('article_edit_fields', args=[self.my_article_id])
+        self.assertEqual(article.name, 'guitarra')
+        self.assertEqual(article.description, 'una guitarra')
+        self.assertEqual(article.image, self.test_image.name)
+        self.assertEqual(article.state, 'D')
+
+        url = reverse('article_edit_fields', args=str(article.id))
         form_data = {'name': 'nuevo nombre', 'state': 'P', 'image': False, 'description': 'nueva decripcion'}
         response = self.client.post(url, data=form_data)
+
         self.assertEqual(response.status_code, 302)
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Artículo editado exitosamente')
+
+        edit_article = Article.objects.get(id='1')
+        self.assertEqual(edit_article.name, 'nuevo nombre')
+        self.assertEqual(edit_article.description, 'nueva decripcion')
+        self.assertEqual(edit_article.image, self.test_image.name)
+        self.assertEqual(edit_article.state, 'P')
+
+

@@ -9,7 +9,7 @@ import random, os
 import pytz
 from django.contrib import messages
 
-from utils.time_utils import to_chile_time_normalization, to_datetime, is_non_workday
+from utils.time_utils import to_datetime, is_non_workday
 
 
 
@@ -64,7 +64,7 @@ def article_data(request, article_id):
 
 def verificar_horario_habil(horario):
     return not is_non_workday(horario) and not (horario.hour < 9 or horario.hour > 18)
-
+    # return not (horario.hour < 9 or horario.hour > 18)
 
 @login_required
 def article_request(request):
@@ -75,10 +75,10 @@ def article_request(request):
             try:
 
                 string_inicio = request.POST['fecha_inicio'] + " " + request.POST['hora_inicio']
-                start_date_time = to_chile_time_normalization(to_datetime(string_inicio))
+                start_date_time = to_datetime(string_inicio)
                 string_fin = request.POST['fecha_fin'] + " " + request.POST['hora_fin']
-                end_date_time = to_chile_time_normalization(to_datetime(string_fin))
-                now_time = to_chile_time_normalization(datetime.now())
+                end_date_time = to_datetime(string_fin)
+                now_time = datetime.now()
                 errors_found = False
                 if start_date_time > end_date_time:
                     messages.warning(request, 'La reserva debe terminar después de iniciar.')

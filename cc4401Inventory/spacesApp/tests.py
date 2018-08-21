@@ -74,25 +74,57 @@ class SpaceTest(TestCase):
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
 
+    # def test_space_edit_fields_success(self):
+    #     admin = User.objects.create_superuser(email='admin@cei.cl', password='12345')
+    #     admin.is_staff = True
+    #     self.client.login(email=admin.email, password='12345')
+    #
+    #     self.assertEqual(self.my_space.name, 'auditorio')
+    #     self.assertEqual(self.my_space.description, 'un auditorio')
+    #     self.assertEqual(self.my_space.image, self.test_image.name)
+    #     self.assertEqual(self.my_space.state, 'D')
+    #     self.assertEqual(self.my_space.capacity, 300)
+    #
+    #     url = reverse('space_edit_fields', args=[self.my_space_id])
+    #     form_data = {'name': 'nuevo nombre', 'state': 'P', 'image': False,
+    #                  'description': 'nueva decripcion', 'capacity': 400}
+    #     response = self.client.post(url, data=form_data)
+    #     self.assertEqual(response.status_code, 302)
+    #     messages = list(get_messages(response.wsgi_request))
+    #     self.assertEqual(len(messages), 1)
+    #     self.assertEqual(str(messages[0]), 'Espacio editado exitosamente')
+
+
+
     def test_space_edit_fields_success(self):
         admin = User.objects.create_superuser(email='admin@cei.cl', password='12345')
         admin.is_staff = True
         self.client.login(email=admin.email, password='12345')
 
-        self.assertEqual(self.my_space.name, 'auditorio')
-        self.assertEqual(self.my_space.description, 'un auditorio')
-        self.assertEqual(self.my_space.image, self.test_image.name)
-        self.assertEqual(self.my_space.state, 'D')
-        self.assertEqual(self.my_space.capacity, 300)
+        space = Space.objects.get(id='1')
+
+        self.assertEqual(space.name, 'auditorio')
+        self.assertEqual(space.description, 'un auditorio')
+        self.assertEqual(space.image, self.test_image.name)
+        self.assertEqual(space.state, 'D')
+        self.assertEqual(space.capacity, 300)
 
         url = reverse('space_edit_fields', args=[self.my_space_id])
         form_data = {'name': 'nuevo nombre', 'state': 'P', 'image': False,
                      'description': 'nueva decripcion', 'capacity': 400}
         response = self.client.post(url, data=form_data)
+
         self.assertEqual(response.status_code, 302)
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Espacio editado exitosamente')
+
+        edit_space = Space.objects.get(id='1')
+        self.assertEqual(edit_space.name, 'nuevo nombre')
+        self.assertEqual(edit_space.description, 'nueva decripcion')
+        self.assertEqual(edit_space.image, self.test_image.name)
+        self.assertEqual(edit_space.state, 'P')
+        self.assertEqual(edit_space.capacity, 400)
 
     def test_space_edit_fields_fail(self):
         admin = User.objects.create_superuser(email='admin@cei.cl', password='12345')
