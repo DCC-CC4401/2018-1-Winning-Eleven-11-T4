@@ -76,20 +76,53 @@ def logout_view(request):
     return redirect('/user/login/')
 
 
+
 @login_required
 def user_data(request, user_id):
-    user = request.user
-    if user.is_superuser and user.is_staff:
-        return redirect('/')
     try:
         user = User.objects.get(id=user_id)
-        reservations = Reservation.objects.filter(user = user_id).order_by('-starting_date_time')[:10]
-        loans = Loan.objects.filter(user = user_id).order_by('-starting_date_time')[:10]
+        reservations = Reservation.objects.filter(user = user_id).order_by('-starting_date_time')
+        loans = Loan.objects.filter(user = user_id).order_by('-starting_date_time')
+
+        index_res = 0
+        index_loans = 0
+
+        articulos1 = Loan.objects.filter(user = user_id).order_by('-starting_date_time')[:10]
+        espacios1  = []
+
+        articulos2 = Reservation.objects.filter(user = user_id).order_by('-starting_date_time')[:10]
+        espacios2  = []
+
+        for res in reservations:
+            if res.state == 'A':
+                espacios2.append(res)
+        for loan in loans:
+            if loan.state == 'A':
+                espacios1.append(loan)
+
         context = {
             'user': user,
             'reservations': reservations,
-            'loans': loans
+            'loans': loans,
+            'articulos1': articulos1,
+            'espacios1': espacios1,
+            'articulos2': articulos2,
+            'espacios2': espacios2
         }
         return render(request, 'usersApp/user_profile.html', context)
     except Exception:
         return redirect('/')
+
+
+def delete(request):
+    if request.method == 'POST':
+        reservation_ids = request.POST.getlist('loan')
+        try:
+            for reservation_id in reservation_ids:
+                reservation = Loan.objects.get(id=reservation_id)
+                if reservation.state == 'P':
+                    reservation.delete()
+        except:
+            messages.warning(request, 'Ha ocurrido un error y la reserva no se ha eliminado')
+
+        return redirect('user_data', user_id=request.user.id)
