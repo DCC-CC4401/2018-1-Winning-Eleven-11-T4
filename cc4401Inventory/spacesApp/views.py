@@ -9,7 +9,7 @@ import os
 from django.core.files import File
 import urllib
 
-
+@login_required
 def space_data(request, space_id):
     try:
         space = Space.objects.get(id=space_id)
@@ -27,7 +27,8 @@ def space_data(request, space_id):
                     "start": r.starting_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
                     "end": r.ending_date_time.strftime("%Y-%m-%dT%H:%M:%S"),
                     "color": color,
-                    "estado": r.state
+                    "estado": r.state,
+                    "id": r.id
                 }
                 reservations_list.append(reserva_dic)
         if request.method == 'POST':
@@ -80,7 +81,8 @@ def space_data(request, space_id):
             url = '/reservation/%d' % reservation.id
             reservation_info = {
                 'content': content,
-                'url': url
+                'url': url,
+                'id': reservation.id
             }
 
             reservations_last_ten.append(reservation_info)
@@ -125,26 +127,31 @@ def space_data_admin(request, space_id):
 @login_required
 def space_edit_fields(request, space_id):
     if request.method == "POST":
-        s = Space.objects.get(id=space_id)
-        if request.POST["name"] != "":
-            s.name = request.POST["name"]
+        try:
+            s = Space.objects.get(id=space_id)
+            if request.POST["name"] != "":
+                s.name = request.POST["name"]
 
-        s.description = request.POST["description"]
+            s.description = request.POST["description"]
 
-        if request.POST["state"] != "":
-            s.state = request.POST["state"]
+            if request.POST["state"] != "":
+                s.state = request.POST["state"]
 
-        if request.POST["capacity"] != "":
-            s.capacity = request.POST["capacity"]
-            
-        u_file = request.FILES.get('image', False)
+            if request.POST["capacity"] != "":
+                s.capacity = request.POST["capacity"]
 
-        if 'image' in request.FILES:
-            extension = os.path.splitext(u_file.name)[1]
-            s.image.save(str(space_id)+"_image"+extension, u_file)
+            u_file = request.FILES.get('image', False)
 
-        s.save()
-        return redirect('/admin/items-panel/')
+            if 'image' in request.FILES:
+                extension = os.path.splitext(u_file.name)[1]
+                s.image.save(str(space_id)+"_image"+extension, u_file)
+
+            s.save()
+            messages.success(request, 'Espacio editado exitosamente')
+            return redirect('/admin/items-panel/')
+        except Exception as e:
+            messages.warning(request, 'Error al editar')
+
     return redirect('/space/' + str(space_id) + '/edit')
 
 
