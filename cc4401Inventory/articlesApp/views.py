@@ -118,27 +118,32 @@ def article_data_admin(request, article_id):
 @login_required
 def article_edit_fields(request, article_id):
     if request.method == "POST":
-        a = Article.objects.get(id=article_id)
+        try:
+            a = Article.objects.get(id=article_id)
 
-        if request.POST["name"] != "":
-            a.name = request.POST["name"]
+            if request.POST["name"] != "":
+                a.name = request.POST["name"]
 
-        a.description = request.POST["description"]
+            a.description = request.POST["description"]
 
-        if request.POST["state"] != "":
-            a.state = request.POST["state"]
+            if request.POST["state"] != "":
+                a.state = request.POST["state"]
 
-        u_file = request.FILES.get('image', False)
-        if 'image' in request.FILES:
-            extension = os.path.splitext(u_file.name)[1]
-            a.image.save(str(article_id)+"_image"+extension, u_file)
+            u_file = request.FILES.get('image', False)
+            if 'image' in request.FILES:
+                extension = os.path.splitext(u_file.name)[1]
+                a.image.save(str(article_id)+"_image"+extension, u_file)
 
-        a.save()
-        return redirect('/admin/items-panel/')
+            a.save()
+            messages.success(request, 'Artículo editado exitosamente')
+            return redirect('/admin/items-panel/')
+        except Exception as e:
+            messages.warning(request, 'error al editar')
+
     return redirect('/space/' + str(article_id) + '/edit')
 
 @login_required
-def delete_item(request,article_id):
+def delete_item(request, article_id):
 
     item = Article.objects.get(id=article_id)
     item.delete()
