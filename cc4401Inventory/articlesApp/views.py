@@ -138,7 +138,7 @@ def article_edit_fields(request, article_id):
             messages.success(request, 'Artículo editado exitosamente')
             return redirect('/admin/items-panel/')
         except Exception as e:
-            messages.warning(request, 'error al editar')
+            messages.warning(request, 'Error al editar')
 
     return redirect('/space/' + str(article_id) + '/edit')
 

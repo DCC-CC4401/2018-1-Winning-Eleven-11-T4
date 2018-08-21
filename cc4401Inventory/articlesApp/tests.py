@@ -47,7 +47,7 @@ class ArticleTest(TestCase):
         url = reverse('article_data', args=[self.my_article_id])
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, '/user/login/?next=/article/%d' % self.my_article_id)
+        self.assertRedirects(response, '/user/login/?next=/article/%d/' % self.my_article_id)
         self.assertTemplateUsed(response, 'usersApp/login.html')
 
     def test_article_data_view_with_user(self):
