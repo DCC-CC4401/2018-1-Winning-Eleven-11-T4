@@ -26,9 +26,10 @@ class ArticleTest(TestCase):
     def setUp(self):
         # Set Up
         temp_file = tempfile.NamedTemporaryFile()
-        test_image = get_temporary_image(temp_file)
-        self.my_article = create_article(image=test_image.name)
+        self.test_image = get_temporary_image(temp_file)
+        self.my_article = create_article(image=self.test_image.name)
         self.my_article_id = self.my_article.id
+
         self.user = User.objects.create(email='test@email.com')
         self.user.set_password('12345')
         self.user.save()
@@ -56,7 +57,7 @@ class ArticleTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'article_data.html')
-        self.assertEqual(len(response.context['last_loans']), 0) # no se han hecho prestamos
+        self.assertEqual(len(response.context['last_loans']), 0)    # no se han hecho prestamos
         the_article = response.context['article']
         self.assertEqual(the_article.name, 'guitarra')
         self.assertEqual(the_article.description, 'una guitarra')
@@ -77,7 +78,7 @@ class ArticleTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Pedido realizado con éxito')
 
-    def test_article_rquest_view_horario_habil(self):
+    def test_article_request_view_horario_habil(self):
         self.client.login(email='test@email.com', password='12345')
         url = reverse('article_request')
         data = {'article_id': self.my_article_id,
@@ -89,7 +90,7 @@ class ArticleTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Los pedidos deben ser hechos en horario hábil.')
 
-    def test_article_rquest_view_horario_hora_anticipacion(self):
+    def test_article_request_view_horario_hora_anticipacion(self):
         self.client.login(email='test@email.com', password='12345')
         url = reverse('article_request')
         data = {'article_id': self.my_article_id,
@@ -101,22 +102,7 @@ class ArticleTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'Los pedidos deben ser hechos al menos con una hora de anticipación.')
 
-
-    """
-    Este test testea una funcionalidad que no debia estar
-    def test_article_rquest_view_horario_devolucion(self):
-        self.client.login(email='test@email.com', password='12345')
-        url = reverse('article_request')
-        data = {'article_id': self.my_article_id,
-                'fecha_inicio': '2018-09-10', 'hora_inicio': '14:30', 'fecha_fin': '2018-10-10', 'hora_fin': '15:30'}
-        response = self.client.post(url, data=data)
-        self.assertEqual(response.status_code, 302)
-
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Los pedidos deben ser devueltos el mismo día que se entregan.')
-    """
-    def test_article_rquest_view_horario_fecha_correcta(self):
+    def test_article_request_view_horario_fecha_correcta(self):
         self.client.login(email='test@email.com', password='12345')
         url = reverse('article_request')
         data = {'article_id': self.my_article_id,
@@ -128,45 +114,20 @@ class ArticleTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'La reserva debe terminar después de iniciar.')
 
-    # def test_article_rquest_view_usuario_habilitado(self):
-    #     self.client.login(email='test@email.com', password='12345')
-    #     user_status = self.user.enabled
-    #     url = reverse('article_request')
-    #     data = {'article_id': self.my_article_id,
-    #             'fecha_inicio': '2018-09-10', 'hora_inicio': '14:30', 'fecha_fin': '2018-09-10', 'hora_fin': '15:30'}
-    #     response = self.client.post(url, data=data)
-    #     self.assertEqual(response.status_code, 302)
-    #
-    #     messages = list(get_messages(response.wsgi_request))
-    #     self.assertEqual(len(messages), 1)
-    #     self.assertEqual(str(messages[0]), 'Usuario no habilitado para pedir préstamos')
+    def test_article_edit_fields(self):
+        admin = User.objects.create_superuser(email='admin@cei.cl', password='12345')
+        admin.is_staff = True
+        self.client.login(email=admin.email, password='12345')
 
+        self.assertEqual(self.my_article.name, 'guitarra')
+        self.assertEqual(self.my_article.description, 'una guitarra')
+        self.assertEqual(self.my_article.image, self.test_image.name)
+        self.assertEqual(self.my_article.state, 'D')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class TestArticles(TestCase):
-    def setUp(self):
-
-        self.user = User.objects.create(email='test@email.com')
-        self.user.set_password('12345')
-        self.user.save()
-
+        url = reverse('article_edit_fields', args=[self.my_article_id])
+        form_data = {'name': 'nuevo nombre', 'state': 'P', 'image': False, 'description': 'nueva decripcion'}
+        response = self.client.post(url, data=form_data)
+        self.assertEqual(response.status_code, 302)
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Artículo editado exitosamente')
