@@ -78,6 +78,9 @@ def logout_view(request):
 
 @login_required
 def user_data(request, user_id):
+    user = request.user
+    if user.is_superuser and user.is_staff:
+        return redirect('/')
     try:
         user = User.objects.get(id=user_id)
         reservations = Reservation.objects.filter(user = user_id).order_by('-starting_date_time')[:10]
