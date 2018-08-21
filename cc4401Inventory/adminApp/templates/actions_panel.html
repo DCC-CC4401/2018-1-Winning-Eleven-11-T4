@@ -68,8 +68,6 @@
                           Préstamos caducados
                       {% elif loan_filter == 'perdidos' %}
                           Préstamos perdidos
-                      {% elif loan_filter == 'entregados' %}
-                          Préstamos entregados
                       {% endif %}
                   </h1>
               </div>
@@ -81,10 +79,9 @@
                   <input type="hidden" name="date" value="{{ current_date }}">
                   <div class="btn-group" role="group" aria-label="Basic example" style="margin: 10px auto;">
                       <button name = "filter" value="activos" type="submit" class="btn btn-secondary">Activos</button>
-                      <button name = "filter" value ="entregados" type="submit" class="btn btn-secondary">Entregados</button>
                       <button name = "filter" value="pendientes" type="submit" class="btn btn-secondary">Pendientes</button>
                       <button name = "filter" value="caducados" type="submit" class="btn btn-secondary">Caducados</button>
-                      <button name = "filter" value ="perdidos" type="submit" class="btn btn-secondary">Perdidos</button>
+                      <button name = "filter" value="perdidos" type="submit" class="btn btn-secondary">Perdidos</button>
                   </div>
               </form>
         </div>
@@ -100,9 +97,8 @@
                       <th scope="col">Usuario</th>
                       <th scope="col">Fecha de Prestamo</th>
                       <th scope="col">Estado</th>
-                      {% if loan_filter != 'entregados' and loan_filter != 'activos' %}
-                          <th scope="col">Seleccionar</th>
-                      {% endif %}
+                      <th scope="col">Seleccionar</th>
+
                   </tr>
                   </thead>
                   <tbody>
@@ -111,26 +107,33 @@
                           <td>{{ loan.id }}</td>
                           <td>{{ loan.article.name }}</td>
                           <td>{{ loan.user.get_full_name }}</td>
-                          <td>{{ loan.starting_date_time|date:'d/m/Y H:i' }}</td>
+                          <td>{{ loan.starting_date_time|date:'d/m/Y H:i'}}</td>
                           <td>{{ loan.get_state_display }}</td>
-                          {% if loan_filter != 'entregados' and loan_filter != 'activos' %}
-                              <td><input type="checkbox" name="loan_selected" value="{{ loan.id }}"></td>
-                          {% endif %}
+                          <td><input type="checkbox" name="loan_selected" value="{{ loan.id }}"></td>
                       </tr>
                   {% endfor %}
                   </tbody>
               </table>
           {% if loan_filter == 'pendientes' %}
+              <input type="hidden" name="filter" value="pendientes">
               <div class="btn-group" role="group" aria-label="Basic example" style="margin: 10px auto;">
                   <button name="loan_action" value="aceptar" type="submit" class="btn btn-secondary">Aceptar préstamo</button>
                   <button name="loan_action" value="rechazar" type="submit" class="btn btn-secondary">Rechazar préstamo</button>
               </div>
               {% elif loan_filter == 'caducados' %}
+              <input type="hidden" name="filter" value="caducados">
+              <div class="btn-group" role="group" aria-label="Basic example" style="margin: 10px auto;">
+                  <button name="loan_action" value="entregado" type="submit" class="btn btn-secondary">Marcar entregado</button>
+                  <button name="loan_action" value="perdido" type="submit" class="btn btn-secondary">Marcar perdido</button>
+              </div>
+              {% elif loan_filter == 'activos' %}
+              <input type="hidden" name="filter" value="activos">
               <div class="btn-group" role="group" aria-label="Basic example" style="margin: 10px auto;">
                   <button name="loan_action" value="entregado" type="submit" class="btn btn-secondary">Marcar entregado</button>
                   <button name="loan_action" value="perdido" type="submit" class="btn btn-secondary">Marcar perdido</button>
               </div>
               {% elif loan_filter == 'perdidos' %}
+              <input type="hidden" name="filter" value="perdidos">
               <div class="btn-group" role="group" aria-label="Basic example" style="margin: 10px auto;">
                   <button name="loan_action" value="encontrado" type="submit" class="btn btn-secondary">Marcar encontrado</button>
               </div>

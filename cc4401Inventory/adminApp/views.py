@@ -106,6 +106,9 @@ def actions_panel(request):
                 for a_loan in some_loans:
                     a_loan.state = 'A'
                     a_loan.save()
+                    article = Article.objects.get(id=a_loan.article.id)
+                    article.state = 'P'
+                    article.save()
             elif request.POST["loan_action"] == 'rechazar':
                 some_loans = Loan.objects.filter(id__in=request.POST.getlist("loan_selected"))
                 for a_loan in some_loans:
@@ -131,34 +134,29 @@ def actions_panel(request):
                     article.save()
     except:
         redirect('/admin/actions-panel/')
-    loans = Loan.objects.filter(ending_date_time__gt=actual_date,
-                                state='A').order_by('starting_date_time')
-    loan_filter = 'activos'
-    try:
-        if request.method == "POST":
-            if request.POST["filter"] == 'activos':
-                loans = Loan.objects.filter(ending_date_time__gt=actual_date,
-                                            state='A').order_by('starting_date_time')
-                loan_filter = 'activos'
-            elif request.POST["filter"] == 'entregados':
-                loans = Loan.objects.filter(ending_date_time__lt=actual_date, state='A',
-                                            article__state='D').order_by('starting_date_time')
-                loan_filter = 'entregados'
-            elif request.POST["filter"] == 'pendientes':
-                loans = Loan.objects.filter(starting_date_time__gt=actual_date,
-                                            state='P').order_by('starting_date_time')
-                loan_filter = 'pendientes'
-            elif request.POST["filter"] == 'caducados':
-                loans = Loan.objects.filter(ending_date_time__lt=actual_date, state='A',
-                                            article__state='P').order_by('starting_date_time')
-                loan_filter = 'caducados'
-            elif request.POST["filter"] == 'perdidos':
-                loans = Loan.objects.filter(ending_date_time__lt=actual_date, state='A',
-                                            article__state='L').order_by('starting_date_time')
-                loan_filter = 'perdidos'
-    except:
-        loans = Loan.objects.filter(ending_date_time__lt=actual_date, state='A',
-                                    article__state='P').order_by('starting_date_time')
+
+    loans = None
+    loan_filter = None
+
+    if request.method == "POST":
+        if request.POST["filter"] == 'activos':
+            loans = Loan.objects.filter(ending_date_time__gt=actual_date,
+                                        state='A', article__state='P').order_by('starting_date_time')
+            loan_filter = 'activos'
+        elif request.POST["filter"] == 'pendientes':
+            loans = Loan.objects.filter(starting_date_time__gt=actual_date,
+                                        state='P').order_by('starting_date_time')
+            loan_filter = 'pendientes'
+        elif request.POST["filter"] == 'caducados':
+            loans = Loan.objects.filter(ending_date_time__lt=actual_date, state='A',
+                                        article__state='P').order_by('starting_date_time')
+            loan_filter = 'caducados'
+        elif request.POST["filter"] == 'perdidos':
+            loans = Loan.objects.filter(state='A', article__state='L').order_by('starting_date_time')
+            loan_filter = 'perdidos'
+    else:
+        loans = Loan.objects.filter(ending_date_time__gt=actual_date,
+                                    state='A', article__state='P').order_by('starting_date_time')
         loan_filter = 'activos'
 
     context = {
